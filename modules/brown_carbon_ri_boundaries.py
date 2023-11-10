@@ -15,7 +15,7 @@ and source, with the order of absorption being GFAS > residential > shipping >
 traffic > other.
 
 Functions:
-    calculate_ri_bounds: Calculates and returns refractive index bounds for a specified wavelength.
+    get_ri_bounds: Calculates and returns refractive index bounds for a specified wavelength.
 """
 import numpy as np
 

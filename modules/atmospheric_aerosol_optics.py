@@ -61,7 +61,7 @@ def calculate_optical_properties(hamb, tids, wvln, **kwargs):
                             ri_shp_poa, ri_shp_soa, ri_trf_poa, ri_trf_soa,
                             ri_oth_poa, ri_oth_soa)
          
-    with nc.Dataset('../core_data/nkxrnel.nc', 'r') as inp:
+    with nc.Dataset('core_data/nkxrnel.nc', 'r') as inp:
         ngrd = inp.variables['NGRD'][:]
         kgrd = inp.variables['KGRD'][:]
         xvnb = inp.variables['XVNB'][:]

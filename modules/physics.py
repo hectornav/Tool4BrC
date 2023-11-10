@@ -22,19 +22,19 @@ import numpy as np
 
 # Constants for SULFATE Hygroscopic Growth
 # Fitzgerald [1975]; Haywood and Ramaswamy [1998]
-SATURATION_LEVELS = np.array([0.80, 0.90, 0.95, 0.99])
-F99 = 0.0155 * (SATURATION_LEVELS[3] - 0.97) / (1.02 - SATURATION_LEVELS[3]**1.4)
-PHI = np.array([1.058, 1.058, 1.058, 1.058 - F99])
-ALPHA = 1.2 * np.exp(0.066 * SATURATION_LEVELS / (PHI - SATURATION_LEVELS))
-BETA = np.exp(0.00077 * SATURATION_LEVELS / (1.009 - SATURATION_LEVELS))
-ALPHA_VALUES = ALPHA
-BETA_VALUES = BETA
+SAT = np.array([0.80, 0.90, 0.95, 0.99])
+F99 = 0.0155*(SAT[3] - 0.97)/(1.02 - SAT[3]**1.4)
+PHI = np.array([1.058, 1.058, 1.058, 1.058-F99])
+ALF = 1.2*np.exp(0.066*SAT/(PHI - SAT))
+BET = np.exp(0.00077*SAT/(1.009 - SAT))
+A80, A90, A95, A99 = ALF[0], ALF[1], ALF[2], ALF[3]
+B80, B90, B95, B99 = BET[0], BET[1], BET[2], BET[3]
 
 # Additional Constants
 A30 = 1.0
-slope = (ALPHA_VALUES[0] - A30) / (0.80 - 0.30)
-A50 = A30 + slope * (0.50 - 0.30)
-A70 = A30 + slope * (0.70 - 0.30)
+m = (A80 - A30)/(0.80 - 0.30)
+A50 = A30 + m*(0.50 - 0.30)
+A70 = A30 + m*(0.70 - 0.30)
 B30, B50, B70 = 1.0, 1.0, 1.0
 
 def calculate_physical_properties(ri_gfas_poa, ri_gfas_soa, ri_resi_poa, ri_resi_soa, ri_shp_poa,
