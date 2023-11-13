@@ -82,21 +82,34 @@ def get_ri_bounds(wavelength):
         return {'start': k_lambda(k_start, w_start, wavelength), 'end': k_lambda(k_end, w_end, wavelength)}
 
     ri_bounds = {
-        'ri_gfs_poa': _create_ri_bounds_entry(params_saleh['s_brc_k']['start'], params_saleh['s_brc_k']['end'], params_saleh['s_brc_w']['start'], params_saleh['s_brc_w']['end'], wavelength),
+        'ri_gfs_poa': _create_ri_bounds_entry(params_saleh['m_brc_k']['start'], params_saleh['m_brc_k']['end'], params_saleh['m_brc_w']['start'], params_saleh['m_brc_w']['end'], wavelength),
         'ri_gfs_soa': _create_ri_bounds_entry(params_saleh['m_brc_k']['start'], params_saleh['m_brc_k']['end'], params_saleh['m_brc_w']['start'], params_saleh['m_brc_w']['end'], wavelength),
         'ri_res_poa': _create_ri_bounds_entry(params_saleh['m_brc_k']['start'], params_saleh['m_brc_k']['end'], params_saleh['m_brc_w']['start'], params_saleh['m_brc_w']['end'], wavelength),
         'ri_res_soa': _create_ri_bounds_entry(params_saleh['w_brc_k']['start'], params_saleh['w_brc_k']['end'], params_saleh['w_brc_w']['start'], params_saleh['w_brc_w']['end'], wavelength),
         'ri_shp_poa': _create_ri_bounds_entry(params_saleh['w_brc_k']['start'], params_saleh['w_brc_k']['end'], params_saleh['w_brc_w']['start'], params_saleh['w_brc_w']['end'], wavelength),
-        'ri_shp_soa': _create_ri_bounds_entry(params_saleh['vw_brc_k']['start'], params_saleh['vw_brc_k']['end'], params_saleh['w_brc_w']['start'], params_saleh['w_brc_w']['end'], wavelength),
-        'ri_trf_poa': _create_ri_bounds_entry(params_saleh['vw_brc_k']['start'], params_saleh['vw_brc_k']['end'], params_saleh['w_brc_w']['start'], params_saleh['w_brc_w']['end'], wavelength),
-        'ri_trf_soa': _create_ri_bounds_entry(params_saleh['vw_brc_k']['start'], params_saleh['vw_brc_k']['end'], params_saleh['w_brc_w']['start'], params_saleh['w_brc_w']['end'], wavelength),
+        'ri_shp_soa': _create_ri_bounds_entry(params_saleh['vw_brc_k']['start'], params_saleh['vw_brc_k']['end'], params_saleh['vw_brc_w']['start'], params_saleh['vw_brc_w']['end'], wavelength),
+        'ri_trf_poa': _create_ri_bounds_entry(params_saleh['vw_brc_k']['start'], params_saleh['vw_brc_k']['end'], params_saleh['vw_brc_w']['start'], params_saleh['vw_brc_w']['end'], wavelength),
+        'ri_trf_soa': _create_ri_bounds_entry(params_saleh['vw_brc_k']['start'], params_saleh['vw_brc_k']['end'], params_saleh['vw_brc_w']['start'], params_saleh['vw_brc_w']['end'], wavelength),
         'ri_oth_poa': _create_ri_bounds_entry(params_saleh['vw_brc_k']['start'], params_saleh['vw_brc_k']['end'], params_saleh['vw_brc_w']['start'], params_saleh['vw_brc_w']['end'], wavelength),
         'ri_oth_soa': _create_ri_bounds_entry(params_saleh['vw_brc_k']['start'], params_saleh['vw_brc_k']['end'], params_saleh['vw_brc_w']['start'], params_saleh['vw_brc_w']['end'], wavelength),
     }
 
-    return ri_bounds
+    saleh_class = {
+        'ri_gfs_poa': 'moderately',
+        'ri_gfs_soa': 'moderately',
+        'ri_res_poa': 'moderately',
+        'ri_res_soa': 'weakly',
+        'ri_shp_poa': 'weakly',
+        'ri_shp_soa': 'very weakly',
+        'ri_trf_poa': 'very weakly',
+        'ri_trf_soa': 'very weakly',
+        'ri_oth_poa': 'very weakly',
+        'ri_oth_soa': 'very weakly',
+    }
+
+    return ri_bounds, saleh_class
 
 
 if __name__ == '__main__':
-    ri_bounds = get_ri_bounds(370)
+    ri_bounds, tags = get_ri_bounds(370)
     print(ri_bounds)

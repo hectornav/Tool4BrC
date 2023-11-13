@@ -115,13 +115,7 @@ def optimize_stations(stations, model_data, observed_data, method, bounds, const
         
         print(f"Optimization successful: {result.success}")
         print(f"Time: {time.time() - start_time}")
-        
-        # Save optimization time to CSV
-        os.makedirs(f'ri_tables/{kwargs["model"]}/RI_by_season', exist_ok=True)
-        pd.DataFrame({'time': [time.time() - start_time]}).to_csv(
-            f'ri_tables/{kwargs["model"]}/RI_by_season/time_{method}_{kwargs["season"]}.csv', index=False
-        )
-
+    
         return result
     else:
         start_time = time.time()
@@ -140,11 +134,5 @@ def optimize_stations(stations, model_data, observed_data, method, bounds, const
         
         print(f"Optimization successful: {result.success}")
         print(f"Time: {time.time() - start_time}")
-
-        # Save optimization time to CSV
-        os.makedirs(f'ri_tables/{kwargs["model"]}/RI_all', exist_ok=True)
-        pd.DataFrame({'time': [time.time() - start_time]}).to_csv(
-            f'ri_tables/{kwargs["model"]}/RI_all/time_{method}.csv', index=False
-        )
 
         return result

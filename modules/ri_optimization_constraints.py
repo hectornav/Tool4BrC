@@ -35,7 +35,7 @@ def constraint1(ri_values):
     """
     return ri_values[0] - max(ri_values[1:])
 '''
-
+"""
 def constraint2(ri_values):
     '''
     PoA values are always strictly greater than SoA values:
@@ -46,6 +46,7 @@ def constraint2(ri_values):
     poa_soa_differences = [ri_values[i] - ri_values[i + 1] for i in range(0, len(ri_values), 2)]
     # Return the minimum difference - this must be greater than zero for the constraint to be satisfied
     return min(poa_soa_differences) - 1e-6  # Subtract a small epsilon to enforce strict inequality
+"""
 '''
 def constraint2(ri_values):
     
@@ -78,3 +79,40 @@ def constraint3(ri_values):
 '''
 #res el segundo que mas absorbe, quitar que el gfas absorbe mas 
 #
+"""
+def constraint2(ri_values):
+    '''
+    Los valores de SoA siempre son estrictamente mayores que los valores de PoA:
+    ri_gfs_soa > ri_gfs_poa, ri_res_soa > ri_res_poa, ri_shp_soa > ri_shp_poa, 
+    ri_trf_soa > ri_trf_poa, ri_oth_soa > ri_oth_poa
+    '''
+    # Calcular las diferencias entre SoA y PoA para cada especie y asegurarse de que sean estrictamente mayores a 0
+    soa_poa_diferencias = [ri_values[i + 1] - ri_values[i] for i in range(0, len(ri_values), 2)]
+    # Devolver la diferencia mínima - esta debe ser mayor que cero para que la restricción se cumpla
+    return min(soa_poa_diferencias) - 1e-6  # Restar un pequeño épsilon para garantizar la desigualdad estricta
+"""
+
+def constraint_poa_gfs_menos_absorbente(ri_values):
+    """
+    Asegura que el POA de GFAS sea siempre el menos absorbente entre todas las categorías.
+
+    La restricción es que ri_gfs_poa debe ser menor que:
+    - ri_gfs_soa, ri_res_poa, ri_res_soa
+    - ri_shp_poa, ri_shp_soa
+    - ri_trf_poa, ri_trf_soa
+    - ri_oth_poa, ri_oth_soa
+    
+    Parámetros:
+    ri_values (list): Lista de valores del índice de refracción para diferentes especies.
+    
+    Devuelve:
+    float: La diferencia entre ri_gfs_poa y el máximo de los valores de las otras categorías.
+    """
+    # El valor de POA de GFAS
+    poa_gfs = ri_values[0]
+
+    # El máximo de los valores restantes
+    max_others = max(ri_values[1:])
+
+    # La restricción se satisface si el POA de GFAS es menor que el máximo de los otros
+    return poa_gfs - max_others

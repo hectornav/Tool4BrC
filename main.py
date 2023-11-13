@@ -1,4 +1,5 @@
 import pandas as pd
+import inspect
 from scipy.optimize import Bounds
 from modules import data_retrieval, data_processing, optimization, visualization, utils, constants, brown_carbon_ri_boundaries, ri_optimization_constraints
 
@@ -89,20 +90,28 @@ def optimize_ri(df_mod, df_obs, method, mode, bounds, constraints, initial_ri_va
     except Exception as e:
         print(f"Error: {e}")
         return None
-    
+
+def is_constraint_function(obj):
+    return inspect.isfunction(obj) and obj.__name__.startswith("constraint")
 
 if __name__ == '__main__':
-    # Set bounds according to the RI bounds obtained for the wavelength.
-    brc_ri_bounds = brown_carbon_ri_boundaries.get_ri_bounds(370)
+    # Set bounds according to the RI bounds obtained for the wavelength (nm).
+    brc_ri_bounds, tags = brown_carbon_ri_boundaries.get_ri_bounds(370)
+    # save table of ri boundries
+    visualization.plot_boundaries(brc_ri_bounds, tags)
+    #para la ejecucion del codigo
+  
+  
     bounds = Bounds(
         [bound['start'] for bound in brc_ri_bounds.values()],
         [bound['end'] for bound in brc_ri_bounds.values()]
     )
 
-    constraints = [
-        {'type': 'ineq', 'fun': ri_optimization_constraints.constraint2},
-    ]
-
+    constraint_functions = inspect.getmembers(ri_optimization_constraints, is_constraint_function)
+    #constraints = [
+    #    {'type': 'ineq', 'fun': ri_optimization_constraints.constraint2},
+    #]
+    constraints = [{'type': 'ineq', 'fun': func} for _, func in constraint_functions]
     # Load the observed data from the CSV file.
     observed_data_clean = pd.read_csv('../absorption/NInventory/obs/absorption/absorption_brc370.csv')
 
@@ -112,14 +121,13 @@ if __name__ == '__main__':
     # Get a list of station names from the unique stations dataframe.
     list_of_stations = unique_stations['station_name'].unique()
 
-    initial_ri_values = [12e-2, 6e-2, 1e-1, 43e-3, 1e-1, 1e-3, 1e-2, 1e-3, 1e-2, 1e-3]
     mass_data = 'best' #or 'all'
     monarch_data = data_retrieval.get_model_data_4monarch(mass_data=mass_data)
-    methods = ['SLSQP']
-    cases = ['by_station'] #['all', 'by_category', 'by_season', 'by_station', 'by_station_season']
+    methods = ['SLSQP'] #SLSQP, COBYLA, trust-constr
+    cases = ['all'] #['all', 'by_category', 'by_season', 'by_station', 'by_station_season']
     for method in methods:
         for case in cases:
             optimize_ri(
                 monarch_data, observed_data_clean, method, case,
-                bounds, constraints, initial_ri_values, mass_data=mass_data, model=f'monarch_{mass_data}'
+                bounds, constraints, constants.INITIAL_RI_VALUES, mass_data=mass_data, model=f'monarch_{mass_data}'
             )

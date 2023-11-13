@@ -10,7 +10,7 @@ Functions:
 - get_model_data_4emac: Fetches and processes EMAC model data.
 """
 import pandas as pd
-
+import numpy as np
 
 # Load the observed data from the CSV file.
 #observed_data_clean = pd.read_csv('../../absorption/NInventory/obs/absorption/absorption_brc370.csv')
@@ -50,7 +50,7 @@ def get_model_data_4monarch(mass_data='all'):
     for station in unique_stations:
         # Read station data.
         station_data = pd.read_csv(
-            f'{path}{mass_data}_{station}.csv',
+            f'{path}{mass_data}_{station}.csv' if mass_data == 'best' else f'{path}4brc_{station}.csv',
             index_col=0,
             parse_dates=True
         )
@@ -131,6 +131,30 @@ def get_model_data_4emac(mass_data='all'):
     combined_model_data = pd.concat(model_dataframes, ignore_index=True)
 
     return combined_model_data
+
+def get_obsabs370(station, **kwargs):
+    """
+    Get absorption from observation for a specific station.
+    Parameters:
+    station (str): Station name.
+    **kwargs: Keyword arguments passed to calculate_optical_properties.
+    Returns:
+    absorption (float): Absorption for the given mass concentrations.
+    """
+
+    df_abs_obs = pd.read_csv('../absorption/NInventory/obs/absorption/absorption_brc370.csv')
+    #get observation for specific station
+    stn_o = df_abs_obs[df_abs_obs['station_name'] == station][['time', 'AbsBrC370']]
+    #set index as time and datetime format
+    stn_o = stn_o.set_index('time')
+    stn_o.index = pd.to_datetime(stn_o.index)
+
+    if kwargs.get('remove_negatives'):
+        #set negative values to nan
+        stn_o[stn_o < 0] = np.nan
+        return stn_o
+    else:
+        return stn_o
 
 if __name__ == '__main__':
     print(get_model_data_4emac('best'))

@@ -11,6 +11,8 @@ Functions:
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
+
 
 from . import data_processing as dp
 
@@ -57,4 +59,48 @@ def plot_optimized_vs_initial(stations, observed_data, method, mode, initial_ref
         plt.legend()
         plt.savefig(os.path.join(directory, f"{station}-{method}-{mode}.png"))
         plt.close()
+
+def plot_boundaries(data, saleh_class):
+    """
+    Plot the boundaries for refractive index values.
+
+    Parameters:
+    data (dict): The data to plot.
+    saleh_class (dict): The Saleh classification for each refractive index type.
+    """
+    # Convertir los datos a DataFrame y transponer
+    df = pd.DataFrame(data).T
+
+    # Asegurarse de que los datos son numéricos y aplicar formato
+    for col in df.columns:
+        df[col] = df[col].apply(lambda x: f"{x:.4f}" if isinstance(x, (int, float)) else x)
+
+    # Añadir la clasificación de Saleh como una nueva columna
+    df['Saleh Classification'] = df.index.map(saleh_class)
+
+    # Crear una carpeta para guardar las imágenes, si aún no existe
+    path = 'ri_boundaries'
+    os.makedirs(path, exist_ok=True)
+
+    # Usar Seaborn para establecer el estilo de la figura
+    sns.set_theme(style="white")
+
+    # Crear la figura con un tamaño más ajustado
+    fig, ax = plt.subplots(figsize=(10, 6))  # Ajustar el tamaño según sea necesario
+    ax.axis('off')
     
+    # Crear la tabla con un ajuste en el espaciado
+    tabla = ax.table(cellText=df.values, colLabels=df.columns, rowLabels=df.index, 
+                     loc='center', cellLoc='center', colColours=["#FFD700"]*len(df.columns),
+                     bbox=[0, 0, 1, 1])
+
+    # Ajustar el tamaño de la fuente
+    tabla.auto_set_font_size(False)
+    tabla.set_fontsize(10)
+    tabla.scale(1, 1.4)  # Escalar la tabla (ancho, alto)
+
+    # Añadir un título a la figura
+    #plt.title("Limites del Índice de Refracción para Diferentes Tipos de Aerosoles", fontsize=14, pad=20)
+
+    # Guardar la figura
+    plt.savefig(os.path.join(path, "ri_boundaries.png"), bbox_inches='tight', dpi=300)
