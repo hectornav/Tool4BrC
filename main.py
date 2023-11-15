@@ -95,8 +95,36 @@ def is_constraint_function(obj):
     return inspect.isfunction(obj) and obj.__name__.startswith("constraint")
 
 if __name__ == '__main__':
-    # Set bounds according to the RI bounds obtained for the wavelength (nm).
-    brc_ri_bounds, tags = brown_carbon_ri_boundaries.get_ri_bounds(370)
+    #...................................................
+    #give values to bounds to the ri for all species
+    #...................................................
+    # m : moderately
+    # w : weakly
+    # vw: very weakly
+    # s: strongly
+    #...................................................
+    poa_gfas = 's'
+    soa_gfas = 'm'
+    poa_res = 'm'
+    soa_res = 'w'
+    poa_shp = 'w'
+    soa_shp = 'vw'
+    poa_trf = 'vw'
+    soa_trf = 'vw'
+    poa_oth = 'vw'
+    soa_oth = 'vw'
+    wavelength = 370
+    brc_ri_bounds, tags = brown_carbon_ri_boundaries.get_ri_bounds(wavelength=wavelength, 
+                                                                   poa_gfas=poa_gfas, 
+                                                                   soa_gfas=soa_gfas, 
+                                                                   poa_res=poa_res, 
+                                                                   soa_res=soa_res, 
+                                                                   poa_shp=poa_shp, 
+                                                                   soa_shp=soa_shp, 
+                                                                   poa_trf=poa_trf, 
+                                                                   soa_trf=soa_trf, 
+                                                                   poa_oth=poa_oth, 
+                                                                   soa_oth=soa_oth)
     # save table of ri boundries
     visualization.plot_boundaries(brc_ri_bounds, tags)
     #para la ejecucion del codigo

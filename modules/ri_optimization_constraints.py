@@ -115,4 +115,4 @@ def constraint_poa_gfs_menos_absorbente(ri_values):
     max_others = max(ri_values[1:])
 
     # La restricción se satisface si el POA de GFAS es menor que el máximo de los otros
-    return poa_gfs - max_others
+    return max_others - poa_gfs

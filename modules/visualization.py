@@ -101,6 +101,12 @@ def plot_boundaries(data, saleh_class):
 
     # Añadir un título a la figura
     #plt.title("Limites del Índice de Refracción para Diferentes Tipos de Aerosoles", fontsize=14, pad=20)
+    #give a filename according to saleh classification
+    #join the saleh classification values withthe first letter of each word
 
+    saleh_class = saleh_class.values()
+    saleh_class = [x[0] for x in saleh_class]
+    saleh_class = ''.join(saleh_class)
+    filename = f"ri_boundaries_{saleh_class}.png"
     # Guardar la figura
-    plt.savefig(os.path.join(path, "ri_boundaries.png"), bbox_inches='tight', dpi=300)
+    plt.savefig(os.path.join(path, filename), bbox_inches='tight', dpi=300)

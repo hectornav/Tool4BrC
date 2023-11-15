@@ -148,6 +148,8 @@ def get_obsabs370(station, **kwargs):
     #set index as time and datetime format
     stn_o = stn_o.set_index('time')
     stn_o.index = pd.to_datetime(stn_o.index)
+    #complete with nan values for missing dates, should be from 1-1-2018 to 31-12-2018
+    stn_o = stn_o.reindex(pd.date_range('2018-01-01', '2018-12-31'), fill_value=np.nan)
 
     if kwargs.get('remove_negatives'):
         #set negative values to nan
@@ -155,6 +157,47 @@ def get_obsabs370(station, **kwargs):
         return stn_o
     else:
         return stn_o
+
+def get_mass_obs(stn, **kwargs):
+    """
+    Get OA mass from observation for a specific station.
+    Parameters:
+    stn (str): Station name.
+    **kwargs: Keyword arguments passed to calculate_optical_properties.
+    Returns:
+    mass_oa (float): OA mass for the given mass concentrations.
+    """
+    obs = pd.read_csv('../absorption/NInventory/obs/mass_concentration/oa_mass_concentration.csv')
+    obs = obs[obs['station_name'] == stn][['time', 'pm2p5oa']]
+    obs['time'] = pd.to_datetime(obs['time'])
+    obs = obs.set_index('time')
+    obs = obs.resample('D').mean()
+    obs = obs.reindex(pd.date_range('2018-01-01', '2018-12-31'), fill_value=np.nan)
+
+    if kwargs.get('remove_negatives'):
+        #set negative values to nan
+        obs[obs < 0] = np.nan
+        return obs
+    else:
+        return obs
+    
+def get_mass_mod(stn, **kwargs):
+    """
+    Get OA mass from model for a specific station.
+    Parameters:
+    stn (str): Station name.
+    **kwargs: Keyword arguments passed to calculate_optical_properties.
+    Returns:
+    mass_oa (float): OA mass for the given mass concentrations.
+    """
+    mod = pd.read_csv('../absorption/NInventory/mod/4brc/2018/4brc_' + stn + '.csv', index_col=0, parse_dates=True)
+
+    if kwargs.get('remove_negatives'):
+        #set negative values to nan
+        mod[mod < 0] = np.nan
+        return mod
+    else:
+        return mod
 
 if __name__ == '__main__':
     print(get_model_data_4emac('best'))
