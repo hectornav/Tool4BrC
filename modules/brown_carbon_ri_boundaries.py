@@ -18,20 +18,20 @@ Functions:
 import numpy as np
 
 params_saleh = {
-    'vw_brc_k': {'start': 1e-4, 'end': 1e-3},
+    'vw_brc_k': {'start': 1e-4, 'end': 1e-3}, #1e-1 
     'w_brc_k': {'start': 1e-3, 'end': 1e-2},
     'm_brc_k': {'start': 1e-2, 'end': 1e-1},
-    's_brc_k': {'start': 1e-1, 'end': 0.38}, #upper limit should be revised
-    'vw_brc_w': {'start': 6, 'end': 9},
+    's_brc_k': {'start': 1e-1, 'end': 0.38}, #(Zhu et al. 2022) upper limit should be revised
+    'vw_brc_w': {'start': 6, 'end': 9},#1 to 4 
     'w_brc_w': {'start': 4, 'end': 7},
     'm_brc_w': {'start': 1.5, 'end': 4},
-    's_brc_w': {'start': 0.5, 'end': 1.5}
+    's_brc_w': {'start': 0.5, 'end': 1.5},
 }
 
 dict_of_params = {
     's': {'k': params_saleh['s_brc_k'], 'w': params_saleh['s_brc_w']},
     'm': {'k': params_saleh['m_brc_k'], 'w': params_saleh['m_brc_w']},
-    'w':{'k': params_saleh['w_brc_k'], 'w': params_saleh['w_brc_w']},
+    'w': {'k': params_saleh['w_brc_k'], 'w': params_saleh['w_brc_w']},
     'vw': {'k': params_saleh['vw_brc_k'], 'w': params_saleh['vw_brc_w']},
 }
 

@@ -92,3 +92,35 @@ def calculate_abs_modeled(station, model, ri_values):
     calc_absorption = calculate_absorption(model_conc*1e-6, optical_parameters)
     
     return calc_absorption*1e6
+
+def calculate_abs_modeled_oa(station, model, ri_values):
+    """
+    Calculates the modeled absorption for a specific station based on provided refractive index values.
+
+    Parameters:
+    station (str): Station name used to filter concentration data.
+    model (DataFrame): DataFrame containing model data.
+    ri_values (list): List of refractive index values for different substances.
+
+    Returns:
+    Series: Initial modeled absorption values.
+    """
+    
+    # Unpacking ri_values
+    ri_oa = ri_values
+    
+    # Convert SPECIES to uppercase
+    upper_species = [i.upper() for i in const.SPECIES_OA]
+    
+    # Calculate optical properties
+    optical_parameters = aao.calculate_optical_properties4oa(const.RELATIVE_HUMIDITY, upper_species, const.WAVELENGTH, 
+                                                      ri_oa=ri_oa)
+    
+    # Extract concentration data for the station from the model
+    model_conc = get_data_for_station(model, station, const.SPECIES_OA)
+    
+    #passing absorption in Mm-1
+    calc_absorption = calculate_absorption(model_conc*1e-6, optical_parameters)
+    
+    return calc_absorption*1e6
+

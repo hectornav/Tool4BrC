@@ -1,7 +1,8 @@
 import pandas as pd
 import inspect
 from scipy.optimize import Bounds
-from modules import data_retrieval, data_processing, optimization, visualization, utils, constants, brown_carbon_ri_boundaries, ri_optimization_constraints
+
+from modules import data_retrieval, optimization, utils, constants, brown_carbon_ri_boundaries, ri_optimization_constraints, visualization_boundaries
 
 
 def optimize_ri(df_mod, df_obs, method, mode, bounds, constraints, initial_ri_values, mass_data, **kwargs):
@@ -90,11 +91,8 @@ def optimize_ri(df_mod, df_obs, method, mode, bounds, constraints, initial_ri_va
     except Exception as e:
         print(f"Error: {e}")
         return None
-
-def is_constraint_function(obj):
-    return inspect.isfunction(obj) and obj.__name__.startswith("constraint")
-
-if __name__ == '__main__':
+    
+def cases_bounds(scenario):
     #...................................................
     #give values to bounds to the ri for all species
     #...................................................
@@ -103,16 +101,66 @@ if __name__ == '__main__':
     # vw: very weakly
     # s: strongly
     #...................................................
-    poa_gfas = 's'
-    soa_gfas = 'm'
-    poa_res = 'm'
-    soa_res = 'w'
-    poa_shp = 'w'
-    soa_shp = 'vw'
-    poa_trf = 'vw'
-    soa_trf = 'vw'
-    poa_oth = 'vw'
-    soa_oth = 'vw'
+    #case: strongly absorbing
+    if scenario == 'strongly':
+        poa_gfas = 's'
+        soa_gfas = 'm'
+        poa_res = 'm'
+        soa_res = 'w'
+        poa_shp = 'm'
+        soa_shp = 'w'
+        poa_trf = 'vw'
+        soa_trf = 'vw'
+        poa_oth = 'vw'
+        soa_oth = 'vw'
+    #case: moderately absorbing
+    elif scenario == 'moderately':
+        poa_gfas = 'm'
+        soa_gfas = 'w'
+        poa_res = 'm'
+        soa_res = 'w'
+        poa_shp = 'm'
+        soa_shp = 'w'
+        poa_trf = 'vw'
+        soa_trf = 'vw'
+        poa_oth = 'vw'
+        soa_oth = 'vw'
+    #case: weakly absorbing
+    elif scenario == 'weakly':
+        poa_gfas = 'w'
+        soa_gfas = 'vw'
+        poa_res = 'w'
+        soa_res = 'vw'
+        poa_shp = 'w'
+        soa_shp = 'vw'
+        poa_trf = 'vw'
+        soa_trf = 'vw'
+        poa_oth = 'vw'
+        soa_oth = 'vw'
+    #case: very weakly absorbing
+    elif scenario == 'random':
+        poa_gfas = 'vw'
+        soa_gfas = 'vw'
+        poa_res = 'vw'
+        soa_res = 'vw'
+        poa_shp = 'vw'
+        soa_shp = 'vw'
+        poa_trf = 'vw'
+        soa_trf = 'vw'
+        poa_oth = 'vw'
+        soa_oth = 'vw'
+    return poa_gfas, soa_gfas, poa_res, soa_res, poa_shp, soa_shp, poa_trf, soa_trf, poa_oth, soa_oth
+
+
+def is_constraint_function(obj):
+    return inspect.isfunction(obj) and obj.__name__.startswith("constraint")
+
+if __name__ == '__main__':
+    #...................................................
+    #give values to bounds to the ri for all species
+    #...................................................
+    scenario = 'strongly'
+    poa_gfas, soa_gfas, poa_res, soa_res, poa_shp, soa_shp, poa_trf, soa_trf, poa_oth, soa_oth = cases_bounds(scenario)
     wavelength = 370
     brc_ri_bounds, tags = brown_carbon_ri_boundaries.get_ri_bounds(wavelength=wavelength, 
                                                                    poa_gfas=poa_gfas, 
@@ -126,10 +174,8 @@ if __name__ == '__main__':
                                                                    poa_oth=poa_oth, 
                                                                    soa_oth=soa_oth)
     # save table of ri boundries
-    visualization.plot_boundaries(brc_ri_bounds, tags)
-    #para la ejecucion del codigo
-  
-  
+    visualization_boundaries.plot_boundaries(brc_ri_bounds, tags)
+    #................................................... 
     bounds = Bounds(
         [bound['start'] for bound in brc_ri_bounds.values()],
         [bound['end'] for bound in brc_ri_bounds.values()]
@@ -152,10 +198,10 @@ if __name__ == '__main__':
     mass_data = 'best' #or 'all'
     monarch_data = data_retrieval.get_model_data_4monarch(mass_data=mass_data)
     methods = ['SLSQP'] #SLSQP, COBYLA, trust-constr
-    cases = ['all'] #['all', 'by_category', 'by_season', 'by_station', 'by_station_season']
+    cases = ['by_station'] #['all', 'by_category', 'by_season', 'by_station', 'by_station_season']
     for method in methods:
         for case in cases:
             optimize_ri(
                 monarch_data, observed_data_clean, method, case,
-                bounds, constraints, constants.INITIAL_RI_VALUES, mass_data=mass_data, model=f'monarch_{mass_data}'
+                bounds, constraints, constants.INITIAL_RI_VALUES, mass_data=mass_data, model=f'monarch_{mass_data}_{scenario}'
             )

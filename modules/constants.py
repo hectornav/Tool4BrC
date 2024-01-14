@@ -18,3 +18,6 @@ WAVELENGTH = 370
 #initial_ri_values = [12e-2, 6e-2, 1e-1, 43e-3, 1e-1, 1e-3, 1e-2, 1e-3, 1e-2, 1e-3]
 INITIAL_RI_VALUES = [0.12,0.06,0.10,0.043,0.10,0.001,0.01,0.001,0.01,0.001]
 #give random values
+
+INITIAL_RI_VALUES_OA = [0.12]
+SPECIES_OA = ['oa']

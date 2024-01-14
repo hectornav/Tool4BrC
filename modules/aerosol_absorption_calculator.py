@@ -54,7 +54,7 @@ def calculate_absorption(model, opt_params, delz=1):
     """
     aero = model.columns.tolist()
     #convert model from [ug/m3] to [g/m3]
-    #model = model / 1e6
+    #model = model / 1e6 
     # get the optical properties
     abs_values = {}
     for i in aero:
@@ -100,14 +100,16 @@ def calculate_absorption4brc(model, opt_params, delz=1):
         A DataFrame with the same structure as the model DataFrame, but with values 
         representing the calculated absorption for each aerosol in [Mm-1].
     """
-    aero = model.columns.tolist()
+    #aero = model.columns.tolist()
+    aero = ['poabrc', 'soabrc']
+    #print(model['poabrc'])
     #convert model from [ug/m3] to [g/m3]
     #model = model / 1e6
     # get the optical properties
     abs_values = {}
     for i in aero:
         absorption = ((3.0 * (opt_params[i]['qext'] - opt_params[i]['qsca']) * opt_params[i]['vphi']) / 
-                      (4.0 * opt_params[i]['dens'] * opt_params[i]['reff'])) * model[i] * delz
+                      (4.0 * opt_params[i]['dens'] * opt_params[i]['reff'])) * model['pm2p5pbrc' if i=='poabrc' else 'pm2p5sbrc'] * delz
         abs_values[i] = absorption
 
     # create a dataframe with the absorption values
@@ -160,3 +162,50 @@ def calculate_absorption4brc_from_netcdf(model, opt_params, delz=1):
     ds_abs = xr.Dataset(abs_values)
 
     return ds_abs
+
+def calculateabs4oa(model, opt_params, delz=1):
+    """
+    Calculate the absorption for OA using their optical properties.
+
+    This function calculates the absorption of light for OA 
+    based on their optical properties (extinction coefficient, scattering coefficient, 
+    phase function, density, and effective radius). These properties are provided 
+    through the opt_params dictionary.
+
+    Parameters
+    ----------
+    model : pd.DataFrame
+        A DataFrame with OA and each row represents 
+        a different measurement or simulation. The values in the DataFrame are 
+        aerosol concentrations in [g/m3].
+    opt_params : dict
+        A dictionary containing the optical properties for OA. Each 
+        key should be an aerosol name matching the columns in the model DataFrame. 
+        Each value should be another dictionary with keys: 'qext' (extinction coefficient),
+        'qsca' (scattering coefficient), 'vphi' (phase function), 'dens' (density, [g/cm³]),
+        'reff' (effective radius).
+    delz : float, optional
+        The thickness of the atmospheric layer for which the absorption is calculated, 
+        in the same units as the aerosol concentrations in the model DataFrame. 
+        By default, this is set to 1, implying the concentrations are per unit thickness, [m].
+
+    Returns
+    -------
+    df_abs : pd.DataFrame
+        A DataFrame with the same structure as the model DataFrame, but with values 
+        representing the calculated absorption for each aerosol.
+    """
+    aero = model.columns.tolist()
+    #convert model from [ug/m3] to [g/m3]
+    #model = model / 1e6 
+    # get the optical properties
+    abs_values = {}
+    for i in aero:
+        absorption = ((3.0 * (opt_params[i]['qext'] - opt_params[i]['qsca']) * opt_params[i]['vphi']) / 
+                      (4.0 * opt_params[i]['dens'] * opt_params[i]['reff'])) * model[i] * delz
+        abs_values[i] = absorption
+
+    # create a dataframe with the absorption values
+    df_abs = pd.DataFrame(abs_values, index=model.index)
+
+    return df_abs

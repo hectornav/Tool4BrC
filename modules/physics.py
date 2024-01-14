@@ -94,12 +94,21 @@ def calculate_physical_properties(ri_gfas_poa, ri_gfas_soa, ri_resi_poa, ri_resi
                 }
         return phys
 
-def calculate_brown_carbon_properties():
+def calculate_brown_carbon_properties(ri_brc_strng, ri_brc_blchd):
         #crear el BrC
         phys = {
                 # rgeo, sdev, rmin, rmax, real, imag, dens, alfa[0%:99%], beta[0%:99%]
                 'WATE':[1.336, 1.0e-08],
-                'POABRC':[0.0212, 2.200, 0.005, 20.00, 1.501, 0.122, 1.800, [1.0 for h in np.arange(7)],  [1.0 for h in np.arange(7)]],
-                'SOABRC':[0.0212, 2.200, 0.005, 20.00, 1.486, 0.06, 1.800, [1.0,1.2,1.4,1.5,1.6,1.8,2.2], [1.0 for h in np.arange(7)]]
+                'POABRC':[0.0212, 2.200, 0.005, 20.00, 1.501, ri_brc_strng, 1.800, [1.0 for h in np.arange(7)],  [1.0 for h in np.arange(7)]],
+                'SOABRC':[0.0212, 2.200, 0.005, 20.00, 1.486, ri_brc_blchd, 1.800, [1.0,1.2,1.4,1.5,1.6,1.8,2.2], [1.0 for h in np.arange(7)]]
+        }
+        return phys
+
+def calculate4oatot(ri_oa):
+        #crear el OA
+        phys = {
+                # rgeo, sdev, rmin, rmax, real, imag, dens, alfa[0%:99%], beta[0%:99%]
+                'WATE':[1.336, 1.0e-08],
+                'OA':[0.0212, 2.200, 0.005, 20.00, 1.501, ri_oa, 1.800, [1.0 for h in np.arange(7)],  [1.0 for h in np.arange(7)]],  
         }
         return phys

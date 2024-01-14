@@ -199,5 +199,27 @@ def get_mass_mod(stn, **kwargs):
     else:
         return mod
 
+def get_explct4brcmass(stn, **kwargs):
+    """
+    Get OA mass from model for a specific station.
+    Parameters:
+    stn (str): Station name.
+    **kwargs: Keyword arguments passed to calculate_optical_properties.
+    Returns:
+    mass_oa (float): OA mass for the given mass concentrations.
+    """
+    mod = pd.read_csv('../absorption/NInventory/mod/a5lj/2018/a5lj_' + stn + '.csv', index_col=0, parse_dates=True)
+
+    if kwargs.get('remove_negatives'):
+        #set negative values to nan
+        mod[mod < 0] = np.nan
+        #set to daily mean
+        mod = mod.resample('D').mean()
+        return mod
+    else:
+        #set to daily mean
+        mod = mod.resample('D').mean()
+        return mod
+
 if __name__ == '__main__':
     print(get_model_data_4emac('best'))
