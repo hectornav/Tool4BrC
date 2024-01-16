@@ -1,0 +1,17 @@
+{
+    "stations": {
+      "Ispra": "IPR",
+      "Montseny": "MSY",
+      "OPE": "OPE",
+      "Payerne": "PAY",
+      "Rigi": "RIG",
+      "Paris_SIRTA": "SIR",
+      "Athens_Demokritos": "DEM",
+      "Barcelona_PalauReial": "BCN",
+      "Marseille": "MAR",
+      "Krakow": "KRA",
+      "Helsinki": "HEL",
+      "Hyytiala": "HYY"
+    }
+  }
+  

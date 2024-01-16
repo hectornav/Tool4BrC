@@ -34,18 +34,25 @@ def constraint1(ri_values):
     return ri_values[0] - max(ri_values[1:])
 
 def constraint2(ri_values):
-    '''
-    Ensures that the values for Primary Organic Aerosol (POA) are always strictly greater than 
-    the values for Secondary Organic Aerosol (SOA). The pairs of values are assumed to be 
-    ordered in the sequence of PoA and SOA for each category.
-    '''
-    # Calculate the differences between POA and SOA for each pair
-    poa_soa_differences = [ri_values[i] - ri_values[i + 1] for i in range(0, len(ri_values), 2)]
+    """
+    Asegura que los valores para el Aerosol Orgánico Primario (POA) sean siempre
+    estrictamente mayores que los del Aerosol Orgánico Secundario (SOA). Se asume
+    que los pares de valores están ordenados en la secuencia de POA y SOA para cada
+    categoría.
 
-    # Return the minimum difference, subtract a small epsilon to enforce strict inequality
-    return min(poa_soa_differences) - 1e-4
+    Args:
+    ri_values (list): Lista de valores de índices de refracción.
 
-def constraint3(ri_values):
+    Returns:
+    list: Lista de diferencias entre los valores de POA y SOA para cada par.
+    """
+    # Generar restricciones de desigualdad para cada par (POA, SOA)
+    return [ri_values[i] - ri_values[i + 1] - 1e-5 for i in range(0, len(ri_values), 2)]
+
+# Al usar esta función en un optimizador, cada elemento de la lista debe ser >= 0
+
+
+def aconstraint3(ri_values): #*no usado 
     """
     Esta función ajustada establece una restricción donde se asegura que los valores de 
     POA OTH, SOA OTH, POA TRF y SOA TRF sean los más bajos, pero manteniendo la 

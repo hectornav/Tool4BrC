@@ -62,7 +62,7 @@ def optimize_ri(df_mod, df_obs, method, mode, bounds, constraints, initial_ri_va
         elif mode == 'by_station':
             # Get a list of all station names
             stations = df_mod['station_name'].unique().tolist()
-
+            #stations = stations[6:]
             # Optimize for each station
             for station in stations:
                 result = optimization.optimize_stations(
@@ -181,6 +181,7 @@ if __name__ == '__main__':
         [bound['end'] for bound in brc_ri_bounds.values()]
     )
 
+
     constraint_functions = inspect.getmembers(ri_optimization_constraints, is_constraint_function)
     #constraints = [
     #    {'type': 'ineq', 'fun': ri_optimization_constraints.constraint2},
@@ -197,6 +198,7 @@ if __name__ == '__main__':
 
     mass_data = 'best' #or 'all'
     monarch_data = data_retrieval.get_model_data_4monarch(mass_data=mass_data)
+    #monarch_data.to_csv('model_mass_data.csv')
     methods = ['SLSQP'] #SLSQP, COBYLA, trust-constr
     cases = ['by_station'] #['all', 'by_category', 'by_season', 'by_station', 'by_station_season']
     for method in methods:

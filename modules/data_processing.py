@@ -34,6 +34,7 @@ def get_data_for_station(dataframe, station, columns):
     else:
         # Filter the data for the given station and select the specified columns.
         station_data = dataframe[dataframe['station_name'] == station][columns + ['time']]
+        #print(station_data)
         # Set the 'time' column as the index of the DataFrame.
         return station_data.set_index('time')
 

@@ -17,9 +17,16 @@ import os
 import time
 from scipy.optimize import minimize
 
+#for pso
+from pyswarm import pso
+
 from . import sync_obs_model_data as sync
 from . import data_processing as dp
 from . import seasonal_data_grouper as sbys
+
+#hide warning
+import warnings
+warnings.filterwarnings("ignore")
 
 def calculate_error(measured_abs, calc_absorption):
     """
@@ -36,13 +43,38 @@ def calculate_error(measured_abs, calc_absorption):
     measured_abs.index = pd.to_datetime(measured_abs.index)
     calc_absorption.index = pd.to_datetime(calc_absorption.index)
     obs, mod = sync.sync_obs_with_model(measured_abs, calc_absorption)
+    #print(len(obs), len(mod))
     # Calcular las diferencias absolutas
     differences = np.abs(obs - mod)
 
     # Calcular el error absoluto medio
     error = differences.mean()
-
+    
+    #print(f"Error: {error}")
     return error
+
+def count_values(mod, obs):
+    """
+    Counts the number of values in the model and observation dataframes.
+
+    Parameters:
+    mod (DataFrame): The model data.
+    obs (DataFrame): The observation data.
+
+    Returns:
+    int: The number of values in the model data.
+    int: The number of values in the observation data.
+    """
+    # Count the number of values in the model and observation dataframes which are not NaN
+    o,m = sync.sync_obs_with_model(obs, mod)
+    mod_values = m.count().sum()
+    obs_values = o.count().sum()
+    
+    if mod_values != obs_values:
+        print(f"Warning: The number of values in the model and observation dataframes are not equal. {mod_values} != {obs_values}")
+    else:
+        #print(f"Number of values: {mod_values}")
+        return mod_values
 
 
 def cost_function(station, model, observation, ri_values):
@@ -65,8 +97,16 @@ def cost_function(station, model, observation, ri_values):
     measured_abs.index = pd.to_datetime(measured_abs.index)
 
     error = calculate_error(measured_abs, calc_absorption)
+    #print a df with number of values treated
+    num_val = count_values(calc_absorption, measured_abs)
+    df = pd.DataFrame({'station': station, 'num_val': num_val}, index=[0])
+    #save df to csv in a folder called num_val with its station name
+    if not os.path.exists('num_val'):
+        os.makedirs('num_val')
+    df.to_csv(f'num_val/{station}.csv', index=False)
+
     #rmse = calculate_rmse(measured_abs, calc_absorption*1e6)
-  
+    
     return error
 
 def optimize_stations(stations, model_data, observed_data, method, bounds, constraints, initial_refractive_indices, **kwargs):
@@ -85,7 +125,7 @@ def optimize_stations(stations, model_data, observed_data, method, bounds, const
     Returns:
     Result: The result of the optimization process.
     """
-    # Remove negative values from observed_data
+    # consider only positive values from observed_data
     observed_data = observed_data[observed_data['AbsBrC370'] > 0]
 
     if kwargs.get('by_season') == 'yes':
@@ -118,24 +158,38 @@ def optimize_stations(stations, model_data, observed_data, method, bounds, const
     
         return result
     else:
-        start_time = time.time()
+        max_attempts = 5  # Define el número máximo de intentos
+        attempt = 0
+        success = False
 
-        # This is the objective function that will be minimized
-        objective = lambda ri_values: sum(
-            cost_function(
-                station,
-                model_data,
-                observed_data[observed_data['station_name'] == station],
-                ri_values
-            ) for station in stations
-        )
+        while attempt < max_attempts and not success:
+            start_time = time.time()
+            # Esta es la función objetivo que se minimizará
+            objective = lambda ri_values: sum(
+                cost_function(
+                    station,
+                    model_data,
+                    observed_data[observed_data['station_name'] == station],
+                    ri_values
+                ) for station in stations
+            )
 
-        result = minimize(objective, initial_refractive_indices, method=method, bounds=bounds, constraints=constraints)
-        
-        print(f"Optimization successful: {result.success}")
-        print(f"Time: {time.time() - start_time}")
+            result = minimize(objective, initial_refractive_indices, method=method, bounds=bounds, constraints=constraints)
 
-        return result
+            success = result.success
+            #counting number of values in model and observation
+
+            if success:
+                print(f"Optimization successful: {result.success}")
+            else:
+                print(f"Optimization attempt {attempt + 1} failed")
+                print(f"Optimization successful: {result.message}")
+
+
+            print(f"Time: {time.time() - start_time}")
+            attempt += 1
+
+        return result     
 
 def cost_function4oa(station, model, observation, ri_values):
     """
