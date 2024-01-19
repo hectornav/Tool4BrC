@@ -12,6 +12,35 @@
       "Krakow": "KRA",
       "Helsinki": "HEL",
       "Hyytiala": "HYY"
+    },
+
+    "stn": {
+      "Ispra": "IPR",
+      "Montseny": "MSY",
+      "OPE": "OPE",
+      "Payerne": "PAY",
+      "Rigi": "RIG",
+      "Paris": "SIR",
+      "Athens": "DEM",
+      "Barcelona": "BCN",
+      "Marseille": "MAR",
+      "Krakow": "KRA",
+      "Helsinki": "HEL",
+      "Hyytiala": "HYY"
+    },
+    "acr_first": {
+      "IPR": "Ispra",
+      "MSY": "Montseny",
+      "OPE": "OPE",
+      "PAY": "Payerne",
+      "RIG": "Rigi",
+      "SIR": "Paris_SIRTA",
+      "DEM": "Athens_Demokritos",
+      "BCN": "Barcelona_PalauReial",
+      "MAR": "Marseille",
+      "KRA": "Krakow",
+      "HEL": "Helsinki",
+      "HYY": "Hyytiala"
     }
   }
   

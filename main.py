@@ -159,7 +159,7 @@ if __name__ == '__main__':
     #...................................................
     #give values to bounds to the ri for all species
     #...................................................
-    scenario = 'strongly'
+    scenario = 'strongly' #or 'moderately' or 'strongly' or 'random
     poa_gfas, soa_gfas, poa_res, soa_res, poa_shp, soa_shp, poa_trf, soa_trf, poa_oth, soa_oth = cases_bounds(scenario)
     wavelength = 370
     brc_ri_bounds, tags = brown_carbon_ri_boundaries.get_ri_bounds(wavelength=wavelength, 
@@ -175,6 +175,7 @@ if __name__ == '__main__':
                                                                    soa_oth=soa_oth)
     # save table of ri boundries
     visualization_boundaries.plot_boundaries(brc_ri_bounds, tags)
+    print("Boundaries plotted")
     #................................................... 
     bounds = Bounds(
         [bound['start'] for bound in brc_ri_bounds.values()],

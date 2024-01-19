@@ -1,9 +1,9 @@
 RI_name,ri_values
 poagfs,0.1324
-soagfs,0.0363
+soagfs,0.0049
 poares,0.1324
-soares,0.043
-poashp,0.0296
+soares,0.0421
+poashp,0.0181
 soashp,0.0049
 poatrf,0.0011
 soatrf,0.0011

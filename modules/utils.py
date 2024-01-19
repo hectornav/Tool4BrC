@@ -20,6 +20,7 @@ from matplotlib.lines import Line2D
 import calendar as cal
 import numpy as np
 import seaborn as sns
+import json 
 
 from . import constants
 from . import data_processing as dp
@@ -29,6 +30,11 @@ from . import data_retrieval as dr
 from . import conc2abs as ca
 from . import statistics as st 
 
+def convention_names_stations():
+    dict_of_names = {}
+    with open('modules/conv_stat_names.json') as file:
+        dict_of_names = json.load(file)
+    return dict_of_names
 
 
 def print_table(optimization_result, mode, method, **kwargs):
@@ -330,20 +336,21 @@ def plot_bar_seasonal_abs(stn, points, mode, model):
 
     return plt.close()
 
-def plot_line_mass(stn, points):
+def plot_line_mass(stn):
     fig, ax = plt.subplots(2, 2, figsize=(10, 5))
     # adjust subplots
     fig.subplots_adjust(hspace=0.45, wspace=0.05)
     ax = ax.flatten()
-
-    obs_mass = dr.get_mass_obs(stn, remove_negatives=True)
-    mod_mass = pd.DataFrame(dr.get_mass_mod(stn).sum(axis=1), columns=['pm2p5oa'])
+    
+    obs_mass = dr.get_mass_obs(convention_names_stations()["acr_first"][stn], remove_negatives=True)
+    mod_mass = pd.DataFrame(dr.get_mass_mod(convention_names_stations()["acr_first"][stn]).sum(axis=1), columns=['pm2p5oa'])
 
     for i, season in enumerate(['DJF', 'MAM', 'JJA', 'SON']):
         obs = sbys.season(obs_mass)[season]
         mod = sbys.season(mod_mass)[season]
 
-        x_mod = format_spanish_date_to_english(mod.index.strftime('%b-%d'))
+        #x_mod = format_spanish_date_to_english(mod.index.strftime('%b-%d'))
+        x_mod = mod.index.strftime('%b-%d')
         # Plot Model Data
         ax[i].plot(x_mod,
                    mod,
@@ -360,7 +367,8 @@ def plot_line_mass(stn, points):
         if not obs.empty:
             threshold = 10
             linestyle = '-' if len(obs.index) > threshold else ''
-            x_obs = format_spanish_date_to_english(obs.index.strftime('%b-%d'))
+            #x_obs = format_spanish_date_to_english(obs.index.strftime('%b-%d'))
+            x_obs = obs.index.strftime('%b-%d')
             ax[i].plot(x_obs,
                        obs,
                        color='green',
@@ -381,7 +389,7 @@ def plot_line_mass(stn, points):
     path = 'imgs/seasonal_mass/ts/'
     filename = stn +'_mass_ts.png'
     save_plot(fig, path, filename)
-    return plt.close()
+    return plt.show()
 
 def plot_bar_mass(stn):
     fig, ax = plt.subplots(2, 2, figsize=(25, 9))
@@ -514,10 +522,17 @@ def calculate_stats(stations, mode, points, model):
 #create a function to get a heatmap of ris for each station
 def plot_heatmap_ri_by_stn(model, filename):
 
+    #adding convention acronim names
+    import json
+    dict_of_names = {}
+    with open('modules/conv_stat_names.json') as file:
+        dict_of_names = json.load(file)
+    
     path = 'ri_tables/' + model + '/RI_by_station/'
 
     files = os.listdir(path)
-    files = [i for i in files if i.endswith('.csv')]
+    #files = [i for i in files if i.endswith('.csv')]
+    files = [i for i in files if 'SLSQP' in i and i.endswith('.csv')]
     df_stns = pd.DataFrame()
     for file in files:
         df = pd.read_csv(path + file)
@@ -530,10 +545,14 @@ def plot_heatmap_ri_by_stn(model, filename):
         df_stns = pd.concat([df_stns, df], ignore_index=True)
     #set station as columns 
     df_stns = df_stns.pivot_table(index='index', columns='station', values='ri_values')
-    df_stns.columns = [col.split('_')[2] for col in df_stns.columns]
+    stns = [col.split('_')[2] for col in df_stns.columns]
+    df_stns.columns = [dict_of_names['stn'][stns[i]] for i in range(len(stns))]
+    #sort by column names
+    df_stns = df_stns.reindex(sorted(df_stns.columns), axis=1)
     #set index as the ri_names
     df_stns.index = indexes
     fig, ax = plt.subplots(figsize=(18, 8))
+    ax.set_title(model.split("_")[-1].title(), fontweight='bold')
     sns.heatmap(df_stns, cmap='coolwarm', annot=True, fmt='.3f', linewidths=0.5, cbar=False)
     path2sv = 'imgs/ri_tables/' + model + '/'
     os.makedirs(path2sv, exist_ok=True)

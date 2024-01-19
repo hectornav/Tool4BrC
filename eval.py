@@ -59,16 +59,17 @@ def save_df_as_png(model, mode):
 
 #save_df_as_png('monarch_best_strongly', 'all')
 
-#ut.plot_heatmap_ri_by_stn('monarch_best?weakly', 'gfas_weakly_by_stn')
+#ut.plot_heatmap_ri_by_stn('monarch_best_moderately', 'best_moderately_by_stn')
 #ut.plot_line_seasonal_abs(stn, points, mode, model='monarch_best_moderately')
 #ut.plot_heatmap_ri_by_stn_season(get_stations(), 'monarch_best_weakly_s', 'weakly_by_stn_season')
 
 """
 for stn in unique_stations:
-    ut.plot_line_seasonal_abs(stn, points='complete', mode='by_station', model='monarch_best?weakly')
-    ut.plot_bar_seasonal_abs(stn, points='complete', mode='by_station', model='monarch_best?weakly')
+    ut.plot_line_seasonal_abs(stn, points='complete', mode='by_station', model='monarch_best_weakly')
+    ut.plot_bar_seasonal_abs(stn, points='complete', mode='by_station', model='monarch_best_weakly')
     #plot_line_mass(stn, points='complete')
     #plot_bar_mass(stn)
+
 
 """
 
@@ -171,5 +172,5 @@ def calcular_moderately_fac2(unique_stations):
     return df_moderately_fac2
 
 # Ejemplo de uso:
-df_resultado = calcular_moderately_fac2(unique_stations)
-print(df_resultado)
+#df_resultado = calcular_moderately_fac2(unique_stations)
+#print(df_resultado)

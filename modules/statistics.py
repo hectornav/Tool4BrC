@@ -4,20 +4,35 @@ from scipy import stats
 import matplotlib.pyplot as plt
 
 def preproc_data(obs, mod):
-    #process the data
-    #first check that index is in datetime format otherwise convert it
-    if isinstance(obs.index, pd.DatetimeIndex) == False:
+    # Procesar los datos
+    # Primero verifica que el índice esté en formato datetime, de lo contrario conviértelo
+    if not isinstance(obs.index, pd.DatetimeIndex):
         obs.index = pd.to_datetime(obs.index)
     
-    if isinstance(mod.index, pd.DatetimeIndex) == False:
+    if not isinstance(mod.index, pd.DatetimeIndex):
         mod.index = pd.to_datetime(mod.index)
 
-    #select data not nan in obs
-    obs = obs[~np.isnan(obs)]
-    #select data not nan in mod
-    mod = mod[~np.isnan(mod)]
-    #select data that is in both obs and mod
+    # Asegúrate de que estás trabajando con las mismas columnas en caso de DataFrames
+    if isinstance(obs, pd.DataFrame) and isinstance(mod, pd.DataFrame):
+        # Alinear columnas
+        common_columns = obs.columns.intersection(mod.columns)
+        obs = obs[common_columns]
+        mod = mod[common_columns]
+
+    # Eliminar filas con NaN en cualquier columna para DataFrames
+    # o filas con NaN para Series
+    obs = obs.dropna()
+    mod = mod.dropna()
+
+    # Alinear los datos en obs y mod basándose en sus índices
     obs, mod = obs.align(mod, join='inner')
+
+    # Asegúrate de que obs y mod sean Series o arrays 1D antes de devolverlos
+    if isinstance(obs, pd.DataFrame):
+        obs = obs.squeeze()
+    if isinstance(mod, pd.DataFrame):
+        mod = mod.squeeze()
+
     return obs, mod
 
 def calculate_corr(obs, mod):

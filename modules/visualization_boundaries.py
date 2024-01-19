@@ -86,7 +86,7 @@ def plot_boundaries(data, saleh_class):
     sns.set_theme(style="white")
 
     # Crear la figura con un tamaño más ajustado
-    fig, ax = plt.subplots(figsize=(10, 6))  # Ajustar el tamaño según sea necesario
+    fig, ax = plt.subplots(figsize=(5.2, 3.1))  # Ajustar el tamaño según sea necesario
     ax.axis('off')
     
     # Crear la tabla con un ajuste en el espaciado
@@ -97,7 +97,7 @@ def plot_boundaries(data, saleh_class):
     # Ajustar el tamaño de la fuente
     tabla.auto_set_font_size(False)
     tabla.set_fontsize(10)
-    tabla.scale(1, 1.4)  # Escalar la tabla (ancho, alto)
+    tabla.scale(.5, .5)  # Escalar la tabla (ancho, alto)
 
     # Añadir un título a la figura
     #plt.title("Limites del Índice de Refracción para Diferentes Tipos de Aerosoles", fontsize=14, pad=20)
