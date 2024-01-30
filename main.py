@@ -159,7 +159,7 @@ if __name__ == '__main__':
     #...................................................
     #give values to bounds to the ri for all species
     #...................................................
-    scenario = 'strongly' #or 'moderately' or 'strongly' or 'random
+    scenario = 'weakly' #or 'moderately' or 'strongly' or 'random
     poa_gfas, soa_gfas, poa_res, soa_res, poa_shp, soa_shp, poa_trf, soa_trf, poa_oth, soa_oth = cases_bounds(scenario)
     wavelength = 370
     brc_ri_bounds, tags = brown_carbon_ri_boundaries.get_ri_bounds(wavelength=wavelength, 
@@ -201,7 +201,7 @@ if __name__ == '__main__':
     monarch_data = data_retrieval.get_model_data_4monarch(mass_data=mass_data)
     #monarch_data.to_csv('model_mass_data.csv')
     methods = ['SLSQP'] #SLSQP, COBYLA, trust-constr
-    cases = ['by_station'] #['all', 'by_category', 'by_season', 'by_station', 'by_station_season']
+    cases = ['all'] #['all', 'by_category', 'by_season', 'by_station', 'by_station_season']
     for method in methods:
         for case in cases:
             optimize_ri(

@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 import matplotlib.pyplot as plt
+import datetime as dt
 
 def preproc_data(obs, mod):
     # Procesar los datos
@@ -27,13 +28,52 @@ def preproc_data(obs, mod):
     # Alinear los datos en obs y mod basándose en sus índices
     obs, mod = obs.align(mod, join='inner')
 
-    # Asegúrate de que obs y mod sean Series o arrays 1D antes de devolverlos
+    # Asegurar de que obs y mod sean Series o arrays 1D antes de devolverlos
     if isinstance(obs, pd.DataFrame):
         obs = obs.squeeze()
     if isinstance(mod, pd.DataFrame):
         mod = mod.squeeze()
 
     return obs, mod
+
+def preproc_data_collocation(obs, mod, filled=True):
+    # Convertir índices a pd.DatetimeIndex si es necesario
+    if not isinstance(obs.index, pd.DatetimeIndex):
+        obs.index = pd.to_datetime(obs.index)
+    if not isinstance(mod.index, pd.DatetimeIndex):
+        mod.index = pd.to_datetime(mod.index)
+
+    # Eliminar filas con NaN
+    obs = obs.dropna()
+    mod = mod.dropna()
+
+    # Alinear los datos en obs y mod basándose en sus índices de fecha/hora
+    obs, mod_ = obs.align(mod, join='inner', axis=0)
+
+    if filled:
+        #check en que mes obs no tiene datos
+        all_months = pd.date_range(start=min(obs.index.min(), mod.index.min()), 
+                            end=max(obs.index.max(), mod.index.max()), freq='MS')
+
+        # Identificar los meses vacíos
+        meses_vacios = [mes for mes in all_months if mes not in obs.index]
+        mod_collocated = pd.DataFrame()
+
+        for mes in meses_vacios:
+            if mod_.index.month.isin([mes.month]).any():
+                pass
+            else:
+                df = mod[mod.index.month==mes.month]
+                mod_collocated = pd.concat([mod_collocated, df])
+
+        #concatenar el mod_collocated con el mod_ para tener el mod completo
+        mod_c = pd.concat([mod_collocated, mod_])
+        #sort index
+        mod_c = mod_c.sort_index()
+
+        return obs, mod_c
+    else:
+        return obs, mod_
 
 def calculate_corr(obs, mod):
     """
