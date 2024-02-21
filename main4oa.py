@@ -78,7 +78,7 @@ if __name__ == '__main__':
     monarch_data = data_retrieval.get_model_data_4monarch(mass_data=mass_data)
 
     methods = ['SLSQP'] #SLSQP, COBYLA, trust-constr
-    cases = ['by_station']
+    cases = ['all'] #all,  by_station
     observed_data_clean = pd.read_csv('../absorption/NInventory/obs/absorption/absorption_brc370.csv')
 
     # Get a list of unique stations from the observed data.

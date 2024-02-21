@@ -91,6 +91,8 @@ def calculate_corr(obs, mod):
     float
         The correlation between the observed and modeled data.
     """
+    #preprocess data, in model, all zero values are replaced by NaN
+    mod = mod.replace(0, np.nan)
     obs, mod = preproc_data(obs, mod)
     #check that is with plot
     #fig, ax = plt.subplots()
@@ -120,6 +122,7 @@ def calculate_nmb(obs, mod):
     float
         The normalized mean bias between the observed and modeled data.
     """
+    mod = mod.replace(0, np.nan)
     obs, mod = preproc_data(obs, mod)
     #calculate nmb
     nmb = (np.sum(mod-obs)/np.sum(obs))*100
@@ -142,6 +145,7 @@ def calculate_nme(obs, mod):
     float
         The normalized mean error between the observed and modeled data.
     """
+    mod = mod.replace(0, np.nan)
     obs, mod = preproc_data(obs, mod)
     #calculate nme
     nme = (np.sum(np.abs(mod-obs))/np.sum(obs))*100
@@ -164,6 +168,7 @@ def calculate_fac2(obs, mod):
     float
         The fraction of predictions within a factor of two (FAC2) between the observed and modeled data.
     """
+    mod = mod.replace(0, np.nan)
     obs, mod = preproc_data(obs, mod)
     #calculate fac2
     frac = mod / obs
@@ -188,6 +193,7 @@ def calculate_fb(obs, mod):
     float
         The mean fractional bias between the observed and modeled data.
     """
+    mod = mod.replace(0, np.nan)
     #2*((np.mean(m)-np.mean(o))/(np.mean(m)+np.mean(o)))*100
     obs, mod = preproc_data(obs, mod)
     #calculate mfb
@@ -212,6 +218,7 @@ def calculate_rmse(obs, mod):
     float
         The root mean square error between the observed and modeled data.
     """
+    mod = mod.replace(0, np.nan)
     obs, mod = preproc_data(obs, mod)
     #calculate rmse
     rmse = np.sqrt(np.mean((mod-obs)**2))
@@ -234,7 +241,38 @@ def calculate_mae(obs, mod):
     float
         The mean absolute error between the observed and modeled data.
     """
+    mod = mod.replace(0, np.nan)
     obs, mod = preproc_data(obs, mod)
     #calculate mae
     mae = np.mean(np.abs(mod-obs)) 
     return np.round(mae, 2)
+
+
+def statistics4taylor(obs, mod):
+    """
+    Calculate the statistics for the Taylor diagram between the observed and modeled data.
+
+    Parameters
+    ----------
+    obs : array_like
+        The observed data.
+    mod : array_like
+        The modeled data.
+
+    Returns
+    -------
+    dict
+        A dictionary with the statistics for the Taylor diagram.
+    """
+    #preprocess data
+    obs, mod = preproc_data(obs, mod)
+    #calculate std
+    std_obs = np.std(obs)
+    std_mod = np.std(mod)
+    #calculate correlation
+    corr = calculate_corr(obs, mod)
+    #calculate rmse
+    rmse = calculate_rmse(obs, mod)
+
+    stats = {'std_obs': std_obs, 'std_mod': std_mod, 'corr': corr, 'rmse': rmse}
+    return stats

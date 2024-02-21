@@ -18,7 +18,7 @@ import time
 from scipy.optimize import minimize
 
 #for pso
-from pyswarm import pso
+#from pyswarm import pso
 
 from . import sync_obs_model_data as sync
 from . import data_processing as dp

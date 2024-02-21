@@ -201,6 +201,28 @@ def calculate_absorption(station, best=True, mass_mode='all',SA=False, **kwargs)
                               )
     return stn_m
 
+#get data for each station and case 
+def calculate_absorption_cases(station, best=True, mass_mode='all',SA=False, **kwargs):
+    if best and kwargs.get('points')=='best':
+        df_mod_stn = pd.read_csv('../absorption/NInventory/mod/4brc/2018/BestModObs/best_' + station + '.csv', index_col=0,\
+                          parse_dates=True)
+    elif best and kwargs.get('points')=='complete':
+        df_mod_stn = pd.read_csv('../absorption/NInventory/mod/4brc/2018/4brc_' + station + '.csv', index_col=0,\
+                            parse_dates=True)
+
+    stn_m = ca.get_absorption_cases(df_mod_stn, 
+                              WAVELENGTH=constants.WAVELENGTH, 
+                              REL_HUM=constants.RELATIVE_HUMIDITY, 
+                              method= 'SLSQP', 
+                              mode = kwargs.get('mode'), 
+                              mass_mode=mass_mode, 
+                              SA=SA, 
+                              model=kwargs.get('model'),
+                              station=station,
+                              case=kwargs.get('case'),
+                              )
+    return stn_m
+
 def calculate_absorption4oa(station, best=True, mass_mode='all', **kwargs):
     if best and kwargs.get('points')=='best':
         df_mod_stn = pd.read_csv('../absorption/NInventory/mod/4brc/2018/BestModObs/best_' + station + '.csv', index_col=0,\
@@ -619,7 +641,9 @@ def plot_line_seasonal_abs_brc(stn, ri_brc_strng, ri_brc_blchd):
     ax = ax.flatten()
 
     model = dr.get_explct4brcmass(stn, remove_negatives=True)
-    model_abs = ca.get_absorption4brc(model, WAVELENGTH=constants.WAVELENGTH, REL_HUM=constants.RELATIVE_HUMIDITY, ri_brc_strng=ri_brc_strng, ri_brc_blchd=ri_brc_blchd, SA=False)
+    model_abs = ca.get_absorption4brc(model, WAVELENGTH=constants.WAVELENGTH,\
+                                        REL_HUM=constants.RELATIVE_HUMIDITY,\
+                                        ri_brc_strng=ri_brc_strng, ri_brc_blchd=ri_brc_blchd, SA=False)
     obser_abs = dr.get_obsabs370(stn, remove_negatives=True)
 
     for i, season in enumerate(['DJF', 'MAM', 'JJA', 'SON']):
