@@ -282,3 +282,119 @@ def opt4oa(stations, model_data, observed_data, method, bounds, constraints, ini
         print(f"Time: {time.time() - start_time}")
 
         return result
+
+def costFunctionNoSecondary(station, model, observation, ri_values):
+    """
+    Calculates the error between modelled and measured absorption for a specific station.
+
+    Parameters:
+    station (str): Station name used to filter concentration and absorption data.
+    model (DataFrame): DataFrame containing model data.
+    observation (DataFrame): DataFrame containing observation data.
+    ri_values (list): List of refractive index values for different substances.
+
+    Returns:
+    float: Error between modelled and measured absorption.
+    """
+    
+    calc_absorption = dp.calculateAbsModeledNoSecondary(station, model, ri_values)
+
+    measured_abs = dp.retrieveDataNoSecondary(observation, station, ['AbsBrC370'])
+    #conver index to datetime
+    measured_abs.index = pd.to_datetime(measured_abs.index)
+
+    error = calculate_error(measured_abs, calc_absorption)
+    #print a df with number of values treated
+    #num_val = count_values(calc_absorption, measured_abs)
+    #df = pd.DataFrame({'station': station, 'num_val': num_val}, index=[0])
+    #save df to csv in a folder called num_val with its station name
+    #if not os.path.exists('num_val'):
+    #    os.makedirs('num_val')
+    #df.to_csv(f'num_val/{station}.csv', index=False)
+
+    #rmse = calculate_rmse(measured_abs, calc_absorption*1e6)
+    
+    return error
+
+def optimizeStationsNoSecondary(stations, model_data, observed_data, method, bounds, constraints,\
+                                 initial_refractive_indices, **kwargs):
+    """
+    Perform optimization for stations.
+
+    Parameters:
+    stations (list): List of station names.
+    model_data (DataFrame): The model data as a DataFrame.
+    observed_data (DataFrame): The observed data as a DataFrame.
+    method (str): The optimization method.
+    bounds (Bounds): The optimization bounds.
+    constraints (dict): The optimization constraints.
+    initial_refractive_indices (list): The initial guess for refractive indices.
+
+    Returns:
+    Result: The result of the optimization process.
+    """
+    # consider only positive values from observed_data
+    observed_data = observed_data[observed_data['AbsBrC370'] > 0]
+
+    if kwargs.get('by_season') == 'yes':
+        start_time = time.time()
+
+        # Avoid stations with empty seasons in observed_data
+        empty_stations = [
+            station
+            for station in stations
+            if sbys.season(observed_data, station_name=station, kind='obs')[kwargs['season']].empty
+        ]
+
+        # Exclude stations that are in empty_stations
+        stations = [station for station in stations if station not in empty_stations]
+
+        # Define the objective function for optimization
+        objective = lambda ri_values: sum(
+            costFunctionNoSecondary(
+                station,
+                sbys.season(model_data, station_name=station, kind='model')[kwargs['season']],
+                sbys.season(observed_data, station_name=station, kind='obs')[kwargs['season']],
+                ri_values
+            ) for station in stations
+        )
+
+        result = minimize(objective, initial_refractive_indices, method=method, bounds=bounds, constraints=constraints)
+        
+        print(f"Optimization successful: {result.success}")
+        print(f"Time: {time.time() - start_time}")
+    
+        return result
+    else:
+        max_attempts = 5  # Define el número máximo de intentos
+        attempt = 0
+        success = False
+
+        while attempt < max_attempts and not success:
+            start_time = time.time()
+            # Esta es la función objetivo que se minimizará
+            objective = lambda ri_values: sum(
+                costFunctionNoSecondary(
+                    station,
+                    model_data,
+                    observed_data[observed_data['station_name'] == station],
+                    ri_values
+                ) for station in stations
+            )
+
+            result = minimize(objective, initial_refractive_indices, method=method, bounds=bounds, constraints=constraints)
+
+            success = result.success
+            #counting number of values in model and observation
+
+            if success:
+                print(f"Optimization successful: {result.success}")
+            else:
+                print(f"Optimization attempt {attempt + 1} failed")
+                print(f"Optimization successful: {result.message}")
+
+
+            print(f"Time: {time.time() - start_time}")
+            attempt += 1
+
+        return result     

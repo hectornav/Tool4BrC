@@ -125,3 +125,75 @@ def calculate_abs_modeled_oa(station, model, ri_values):
     
     return calc_absorption*1e6
 
+# No secondary species
+def retrieveDataNoSecondary(dataframe, station, columns):
+    """
+    Retrieve data for a specific station from a DataFrame.
+
+    Parameters:
+    dataframe (DataFrame): The DataFrame to filter.
+    station (str): The name of the station.
+    columns (list of str): The list of columns to include in the result.
+
+    Returns:
+    DataFrame: A DataFrame filtered for the specified station and columns.
+    """
+    # Check if 'station_name' or 'time' are not in the dataframe columns, return original dataframe.
+    if 'station_name' not in dataframe.columns or 'time' not in dataframe.columns:
+        return dataframe
+    else:
+        # Filter the data for the given station and select the specified columns.
+        station_data = dataframe[dataframe['station_name'] == station][columns + ['time']]
+        #print(station_data)
+        # Set the 'time' column as the index of the DataFrame.
+        return station_data.set_index('time')
+
+def cAbsorptionNoSecondary(model_conc, optical_parameters):
+    """
+    Calculate absorption using model concentrations and optical parameters.
+
+    Parameters:
+    model_conc (DataFrame): DataFrame of model concentrations.
+    optical_parameters (dict): Dictionary of optical parameters.
+
+    Returns:
+    DataFrame: DataFrame of calculated absorption.
+    """
+    model_abs = aac.calculateAbsorptionNoSecondary(model_conc, optical_parameters).sum(axis=1)
+    return pd.DataFrame(model_abs, index=model_conc.index, columns=['AbsBrC370'])
+
+def calculateAbsModeledNoSecondary(station, model, ri_values):
+    """
+    Calculates the modeled absorption for a specific station based on provided refractive index values.
+
+    Parameters:
+    station (str): Station name used to filter concentration data.
+    model (DataFrame): DataFrame containing model data.
+    ri_values (list): List of refractive index values for different substances.
+
+    Returns:
+    Series: Initial modeled absorption values.
+    """
+    
+    # Unpacking ri_values
+    ri_gfas, ri_resi, ri_ship, ri_traf, ri_othr = ri_values
+
+    # Convert SPECIES to uppercase
+    upper_species = [i.upper() for i in const.SPECIESNOSECONDARY]
+    # Calculate optical properties
+    optical_parameters = aao.calculateOpticalPropertiesNoSecondary(const.RELATIVE_HUMIDITY, \
+                                                      upper_species, const.WAVELENGTH, 
+                                                      ri_gfas=ri_gfas,
+                                                      ri_resi=ri_resi,
+                                                      ri_ship=ri_ship,
+                                                      ri_traf=ri_traf,
+                                                      ri_othr=ri_othr)
+    
+    # Extract concentration data for the station from the model
+    model_conc = retrieveDataNoSecondary(model, station, const.SPECIESNOSECONDARY)
+    
+    #passing absorption in Mm-1
+    calc_absorption = cAbsorptionNoSecondary(model_conc*1e-6, optical_parameters)
+    
+    return calc_absorption*1e6
+

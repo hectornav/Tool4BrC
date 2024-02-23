@@ -110,3 +110,55 @@ def plot_boundaries(data, saleh_class):
     filename = f"ri_boundaries_{saleh_class}.png"
     # Guardar la figura
     plt.savefig(os.path.join(path, filename), bbox_inches='tight', dpi=300)
+
+
+def plotBoundariesNoSecondary(data, saleh_class):
+    """
+    Plot the boundaries for refractive index values.
+
+    Parameters:
+    data (dict): The data to plot.
+    saleh_class (dict): The Saleh classification for each refractive index type.
+    """
+    # Convertir los datos
+    df = pd.DataFrame(data).T
+
+    # Asegurarse de que los datos son numéricos y aplicar formato
+    for col in df.columns:
+        df[col] = df[col].apply(lambda x: f"{x:.4f}" if isinstance(x, (int, float)) else x)
+
+    # Añadir la clasificación de Saleh como una nueva columna
+    df['Saleh Classification'] = df.index.map(saleh_class)
+
+    # Crear una carpeta para guardar las imágenes, si aún no existe
+    path = 'ri_boundaries_no_secondary'
+    os.makedirs(path, exist_ok=True)
+
+    # Usar Seaborn para establecer el estilo de la figura
+    sns.set_theme(style="white")
+
+    # Crear la figura con un tamaño más ajustado
+    fig, ax = plt.subplots(figsize=(5.2, 3.1))  # Ajustar el tamaño según sea necesario
+    ax.axis('off')
+    
+    # Crear la tabla con un ajuste en el espaciado
+    tabla = ax.table(cellText=df.values, colLabels=df.columns, rowLabels=df.index, 
+                     loc='center', cellLoc='center', colColours=["#FFD700"]*len(df.columns),
+                     bbox=[0, 0, 1, 1])
+
+    # Ajustar el tamaño de la fuente
+    tabla.auto_set_font_size(False)
+    tabla.set_fontsize(10)
+    tabla.scale(.5, .5)  # Escalar la tabla (ancho, alto)
+
+    # Añadir un título a la figura
+    #plt.title("Limites del Índice de Refracción para Diferentes Tipos de Aerosoles", fontsize=14, pad=20)
+    #give a filename according to saleh classification
+    #join the saleh classification values withthe first letter of each word
+
+    saleh_class = saleh_class.values()
+    saleh_class = [x[0] for x in saleh_class]
+    saleh_class = ''.join(saleh_class)
+    filename = f"ri_boundaries_{saleh_class}.png"
+    # Guardar la figura
+    plt.savefig(os.path.join(path, filename), bbox_inches='tight', dpi=300)

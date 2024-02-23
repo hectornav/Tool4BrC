@@ -155,6 +155,90 @@ def get_ri_bounds(wavelength, **kwargs):
     return ri_bounds, saleh_class
 
 
+def getRiBoundsNoSecondary(wavelength, **kwargs):
+    """
+    Calculate refraction index bounds for different aerosol types and sources.
+
+    Function uses Saleh methodology to create bounds for different aerosol types
+    (Primary Organic Aerosol - POA, Secondary Organic Aerosol - SOA) and different
+    sources (GFAS, residential, shipping, traffic, other). These bounds are based
+    on the absorption properties of each aerosol type and source. The absorption
+    order is: GFAS > residential > shipping > traffic > other.
+
+    Parameters
+    ----------
+    wavelength : float
+        The wavelength for which to calculate the refraction index bounds.
+        This parameter should be in the nm units.
+
+    scenario : str
+        The scenario for which to calculate the refraction index bounds.
+        This parameter should be one of the following: 'strongly', 'moderately',
+        'weakly', or 'random'.
+
+    Returns
+    -------
+    dict
+        A dictionary containing the calculated refraction index bounds for each
+        aerosol type and source.
+    """
+        
+    def k_lambda(k, w, wavelength):
+        """Calculates absorption of light at specific wavelength based on Saleh methodology."""
+        return np.round(k * ((550/wavelength)**w), 4)
+
+    def _create_ri_bounds_entry(k_start, k_end, w_start, w_end, wavelength):
+        """
+        Create a refraction index bounds entry for a given wavelength and parameters.
+
+        Parameters
+        ----------
+        k_start : float
+            The starting absorption coefficient.
+        k_end : float
+            The ending absorption coefficient.
+        w_start : float
+            The starting wavelength exponent.
+        w_end : float
+            The ending wavelength exponent.
+        wavelength : float
+            The wavelength for which to calculate the refraction index bounds.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the calculated refraction index bounds.
+        """
+        return {'start': k_lambda(k_start, w_start, wavelength), 'end': k_lambda(k_end, w_end, wavelength)}
+
+    ri_bounds = {
+        'ri_gfas': _create_ri_bounds_entry(dict_of_params[kwargs.get('gfas')]['k']['start'], dict_of_params[kwargs.get('gfas')]['k']['end'],
+                                                dict_of_params[kwargs.get('gfas')]['w']['start'], dict_of_params[kwargs.get('gfas')]['w']['end'], wavelength),
+
+        'ri_resi': _create_ri_bounds_entry(dict_of_params[kwargs.get('resi')]['k']['start'], dict_of_params[kwargs.get('resi')]['k']['end'],
+                                                dict_of_params[kwargs.get('resi')]['w']['start'], dict_of_params[kwargs.get('resi')]['w']['end'], wavelength),
+                                                
+        'ri_ship': _create_ri_bounds_entry(dict_of_params[kwargs.get('ship')]['k']['start'], dict_of_params[kwargs.get('ship')]['k']['end'],
+                                                dict_of_params[kwargs.get('ship')]['w']['start'], dict_of_params[kwargs.get('ship')]['w']['end'], wavelength),
+
+        'ri_traf': _create_ri_bounds_entry(dict_of_params[kwargs.get('traf')]['k']['start'], dict_of_params[kwargs.get('traf')]['k']['end'],
+                                                dict_of_params[kwargs.get('traf')]['w']['start'], dict_of_params[kwargs.get('traf')]['w']['end'], wavelength),
+
+        'ri_othr': _create_ri_bounds_entry(dict_of_params[kwargs.get('othr')]['k']['start'], dict_of_params[kwargs.get('othr')]['k']['end'],
+                                                dict_of_params[kwargs.get('othr')]['w']['start'], dict_of_params[kwargs.get('othr')]['w']['end'], wavelength),
+    }
+
+    saleh_class = {
+        'ri_gfas': names[kwargs.get('gfas')],
+        'ri_resi': names[kwargs.get('resi')],
+        'ri_ship': names[kwargs.get('ship')],
+        'ri_traf': names[kwargs.get('traf')],
+        'ri_othr': names[kwargs.get('othr')],
+    }
+
+    return ri_bounds, saleh_class
+
+
 if __name__ == '__main__':
 
     ri_bounds, tags = get_ri_bounds(370,
