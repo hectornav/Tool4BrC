@@ -60,7 +60,7 @@ def calculate_optical_properties(hamb, tids, wvln, **kwargs):
     phys = calculate_physical_properties(ri_gfs_poa, ri_gfs_soa, ri_res_poa, ri_res_soa,
                             ri_shp_poa, ri_shp_soa, ri_trf_poa, ri_trf_soa,
                             ri_oth_poa, ri_oth_soa)
-         
+    
     with nc.Dataset('core_data/nkxrnel.nc', 'r') as inp:
         ngrd = inp.variables['NGRD'][:]
         kgrd = inp.variables['KGRD'][:]
@@ -176,6 +176,7 @@ def calculate_optical_properties(hamb, tids, wvln, **kwargs):
         optical_parameters[tids[i].lower()] = {'qext': eout[0][i], 'qsca': sout[0][i], 
                                        'asym': gout[0][i], 'dens': dout[0][i], 
                                        'reff': rout[0][i], 'vphi': vout[0][i]}
+
     return optical_parameters
     #return np.array(eout), np.array(sout), np.array(gout), np.array(dout), np.array(rout), np.array(vout)
 

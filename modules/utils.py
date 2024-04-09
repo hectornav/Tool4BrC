@@ -59,8 +59,12 @@ def print_table(optimization_result, mode, method, **kwargs):
         elif mode in ['by_category', 'by_season', 'by_station', 'by_station_season']:
             file_parts.extend(kwargs.get(part) for part in mode.split('_')[1:] if kwargs.get(part))
             file_parts.append(kwargs.get("mass_data"))
-        
+        elif mode in ['by_emissioninventory']:
+            file_parts.extend(kwargs.get(part) for part in mode.split('_')[1:] if kwargs.get(part))
+            file_parts.append(kwargs.get("station"))
+            file_parts.append(kwargs.get("mass_data"))
         file_name = '_'.join(filter(None, file_parts))
+        
         file_path = os.path.join(directory_path, file_name)
         
         print(f"Saving table to {file_path}.png and {file_path}.csv")
@@ -98,6 +102,10 @@ def TableNoSecondary(optimization_result, mode, method, **kwargs):
             file_parts.append(kwargs.get("mass_data"))
         elif mode in ['by_category', 'by_season', 'by_station', 'by_station_season']:
             file_parts.extend(kwargs.get(part) for part in mode.split('_')[1:] if kwargs.get(part))
+            file_parts.append(kwargs.get("mass_data"))
+        elif mode in ['by_emissioninventory_nsoa']:
+            file_parts.extend(kwargs.get(part) for part in mode.split('_')[1:] if kwargs.get(part))
+            file_parts.append(kwargs.get("station"))
             file_parts.append(kwargs.get("mass_data"))
         
         file_name = '_'.join(filter(None, file_parts))
@@ -219,6 +227,15 @@ def save_plot(fig, path, filename):
     os.makedirs(path, exist_ok=True)
     fig.savefig(os.path.join(path, filename), dpi=300, bbox_inches='tight')
 
+def reduceColumnNames(df):
+    df['gfas'] = df['poagfs'] + df['soagfs']
+    df['resi'] = df['poares'] + df['soares']
+    df['ship'] = df['poashp'] + df['soashp']
+    df['traf'] = df['poatrf'] + df['soatrf']
+    df['othr'] = df['poaoth'] + df['soaoth']
+    df.drop(columns=['poagfs', 'soagfs', 'poares', 'soares', 'poashp', 'soashp', 'poatrf', 'soatrf', 'poaoth', 'soaoth'], inplace=True)
+    return df
+
 
 #get data for each station
 def calculate_absorption(station, best=True, mass_mode='all',SA=False, **kwargs):
@@ -263,7 +280,31 @@ def calculate_absorption_cases(station, best=True, mass_mode='all',SA=False, **k
                               )
     return stn_m
 
-def calculate_absorption4oa(station, best=True, mass_mode='all', **kwargs):
+def calculate_absorption_cases_nosoa(station, best=True, mass_mode='all',SA=False, **kwargs):
+    if best and kwargs.get('points')=='best':
+        df_mod_stn = pd.read_csv('../absorption/NInventory/mod/4brc/2018/BestModObs/best_' + station + '.csv', index_col=0,\
+                          parse_dates=True)
+        df_mod_stn = reduceColumnNames(df_mod_stn)
+    elif best and kwargs.get('points')=='complete':
+        df_mod_stn = pd.read_csv('../absorption/NInventory/mod/4brc/2018/4brc_' + station + '.csv', index_col=0,\
+                            parse_dates=True)
+        df_mod_stn = reduceColumnNames(df_mod_stn)
+    
+    stn_m = ca.get_absorption_cases_nosoa(df_mod_stn, 
+                              WAVELENGTH=constants.WAVELENGTH, 
+                              REL_HUM=constants.RELATIVE_HUMIDITY, 
+                              method= 'SLSQP', 
+                              mode = kwargs.get('mode'), 
+                              mass_mode=mass_mode, 
+                              SA=SA, 
+                              model=kwargs.get('model'),
+                              station=station,
+                              case=kwargs.get('case'),
+                              )
+    return stn_m
+
+
+def calculate_absorption4oa_ns(station, best=True, mass_mode='all', **kwargs):
     if best and kwargs.get('points')=='best':
         df_mod_stn = pd.read_csv('../absorption/NInventory/mod/4brc/2018/BestModObs/best_' + station + '.csv', index_col=0,\
                           parse_dates=True)
@@ -273,9 +314,9 @@ def calculate_absorption4oa(station, best=True, mass_mode='all', **kwargs):
         #sum columns with start wit poa and soa and put in oa column mantain nan values as nan
         df_mod_stn['oa'] = df_mod_stn.filter(regex='^poa|^soa').sum(axis=1, skipna=False)
         #now remove poa and soa columns
-        df_mod_stn = df_mod_stn.drop(columns=['poagfs','soagfs','poares','soares','poashp','soashp','poatrf','soatrf','poaoth','soaoth'])
-
-    stn_m = ca.get_absorption4oa(df_mod_stn, 
+        columns = ['poagfs','soagfs','poares','soares','poashp','soashp','poatrf','soatrf','poaoth','soaoth']
+        df_mod_stn = df_mod_stn.drop(columns= columns)
+    stn_m = ca.get_absorption4oa_ns(df_mod_stn, 
                               WAVELENGTH=constants.WAVELENGTH, 
                               REL_HUM=constants.RELATIVE_HUMIDITY, 
                               method= 'SLSQP', 
@@ -285,8 +326,7 @@ def calculate_absorption4oa(station, best=True, mass_mode='all', **kwargs):
                               station=station,
                               )
     return stn_m
-
-
+    
 def plot_line_seasonal_abs(stn, points, mode, model):
     fig, ax = plt.subplots(2, 2, figsize=(10, 5))
     # Adjust subplots

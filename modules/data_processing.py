@@ -51,6 +51,7 @@ def calculate_absorption(model_conc, optical_parameters):
     DataFrame: DataFrame of calculated absorption.
     """
     model_abs = aac.calculate_absorption(model_conc, optical_parameters).sum(axis=1)
+    
     return pd.DataFrame(model_abs, index=model_conc.index, columns=['AbsBrC370'])
 
 def calculate_abs_modeled(station, model, ri_values):
@@ -197,3 +198,79 @@ def calculateAbsModeledNoSecondary(station, model, ri_values):
     
     return calc_absorption*1e6
 
+def calculate_abs_modeled4BCNandMSY(model, ri_values):
+    """
+    Calculates the modeled absorption for a specific station (BCN and MSY) based on provided refractive index values.
+
+    Parameters:
+    station (str): Station name used to filter concentration data.
+    model (DataFrame): DataFrame containing model data.
+    ri_values (list): List of refractive index values for different substances.
+
+    Returns:
+    Series: Initial modeled absorption values.
+    """
+    
+    # Unpacking ri_values
+    ri_gfs_poa, ri_gfs_soa, ri_res_poa, ri_res_soa, ri_shp_poa, ri_shp_soa,\
+    ri_trf_poa, ri_trf_soa, ri_oth_poa, ri_oth_soa = ri_values
+    
+    # Convert SPECIES to uppercase
+    upper_species = [i.upper() for i in const.SPECIES]
+
+    # Calculate optical properties
+    optical_parameters = aao.calculate_optical_properties(const.RELATIVE_HUMIDITY, upper_species, const.WAVELENGTH, 
+                                                      ri_gfs_poa=ri_gfs_poa,
+                                                      ri_gfs_soa=ri_gfs_soa,
+                                                      ri_res_poa=ri_res_poa,
+                                                      ri_res_soa=ri_res_soa,
+                                                      ri_shp_poa=ri_shp_poa,
+                                                      ri_shp_soa=ri_shp_soa,
+                                                      ri_trf_poa=ri_trf_poa,
+                                                      ri_trf_soa=ri_trf_soa,
+                                                      ri_oth_poa=ri_oth_poa,
+                                                      ri_oth_soa=ri_oth_soa)
+    
+    # Extract concentration data for the station from the model
+    #set column 0 as index
+    model_conc = model.set_index('Unnamed: 0')
+    
+    #passing absorption in Mm-1
+    calc_absorption = calculate_absorption(model_conc*1e-6, optical_parameters)
+    
+    return calc_absorption*1e6
+
+def calculate_abs_modeled4BCNandMSY_ns(model, ri_values):
+    """
+    Calculates the modeled absorption for a specific station (BCN and MSY) based on provided refractive index values.
+
+    Parameters:
+    station (str): Station name used to filter concentration data.
+    model (DataFrame): DataFrame containing model data.
+    ri_values (list): List of refractive index values for different substances.
+
+    Returns:
+    Series: Initial modeled absorption values.
+    """
+    # Unpacking ri_values
+    ri_gfas, ri_resi, ri_ship, ri_traf, ri_othr = ri_values
+    
+    # Convert SPECIES to uppercase
+    upper_species = [i.upper() for i in const.SPECIESNOSECONDARY]
+    # Calculate optical properties
+    optical_parameters = aao.calculateOpticalPropertiesNoSecondary(const.RELATIVE_HUMIDITY, \
+                                                      upper_species, const.WAVELENGTH, 
+                                                      ri_gfas=ri_gfas,
+                                                      ri_resi=ri_resi,
+                                                      ri_ship=ri_ship,
+                                                      ri_traf=ri_traf,
+                                                      ri_othr=ri_othr)
+    
+    # Extract concentration data for the station from the model
+    #set column 0 as index
+    model_conc = model.set_index('Unnamed: 0')
+    
+    #passing absorption in Mm-1
+    calc_absorption = calculate_absorption(model_conc*1e-6, optical_parameters)
+    
+    return calc_absorption*1e6

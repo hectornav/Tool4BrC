@@ -398,3 +398,210 @@ def optimizeStationsNoSecondary(stations, model_data, observed_data, method, bou
             attempt += 1
 
         return result     
+
+def cost_function4bcnandmsy(station, model, observation, ri_values):
+    """
+    Calculates the error between modelled and measured absorption for a specific stations, BCN and MSY.
+
+    Parameters:
+    station (str): Station name used to filter concentration and absorption data.
+    model (DataFrame): DataFrame containing model data.
+    observation (DataFrame): DataFrame containing observation data.
+    ri_values (list): List of refractive index values for different substances.
+
+    Returns:
+    float: Error between modelled and measured absorption.
+    """
+    calc_absorption = dp.calculate_abs_modeled4BCNandMSY(model, ri_values)
+    
+    measured_abs = dp.get_data_for_station(observation, station[0], ['AbsBrC370'])
+    
+    #conver index to datetime
+    measured_abs.index = pd.to_datetime(measured_abs.index)
+    
+    error = calculate_error(measured_abs, calc_absorption)
+    #print a df with number of values treated
+    num_val = count_values(calc_absorption, measured_abs)
+    df = pd.DataFrame({'station': station, 'num_val': num_val}, index=[0])
+    #save df to csv in a folder called num_val with its station name
+    if not os.path.exists('num_val'):
+        os.makedirs('num_val')
+    df.to_csv(f'num_val/{station}.csv', index=False)
+
+    #rmse = calculate_rmse(measured_abs, calc_absorption*1e6)
+    
+    return error
+
+def optimize_stations4bcnandmsy(station, model_data, observed_data, method, bounds, constraints, initial_refractive_indices, **kwargs):
+    """
+    Perform optimization for BCN, for HERMES and CAMS inventories.
+
+    Parameters:
+    stations (list): List of station names.
+    model_data (DataFrame): The model data as a DataFrame.
+    observed_data (DataFrame): The observed data as a DataFrame.
+    method (str): The optimization method.
+    bounds (Bounds): The optimization bounds.
+    constraints (dict): The optimization constraints.
+    initial_refractive_indices (list): The initial guess for refractive indices.
+
+    Returns:
+    Result: The result of the optimization process.
+    """
+    # consider only positive values from observed_data
+    observed_data = observed_data[observed_data['AbsBrC370'] > 0]
+
+    if kwargs.get('by_season') == 'yes':
+        start_time = time.time()
+
+        # Define the objective function for optimization
+        objective = lambda ri_values: sum(
+            cost_function4bcnandmsy(
+                station,
+                sbys.season(model_data, station_name=station, kind='model')[kwargs['season']],
+                sbys.season(observed_data, station_name=station, kind='obs')[kwargs['season']],
+                ri_values
+            ) for station in stations
+        )
+
+        result = minimize(objective, initial_refractive_indices, method=method, bounds=bounds, constraints=constraints)
+        
+        print(f"Optimization successful: {result.success}")
+        print(f"Time: {time.time() - start_time}")
+    
+        return result
+    else:
+        max_attempts = 5  # Define el número máximo de intentos
+        attempt = 0
+        success = False
+        
+        while attempt < max_attempts and not success:
+            start_time = time.time()
+            # Esta es la función objetivo que se minimizará
+            objective = lambda ri_values: cost_function4bcnandmsy(
+                                                    station,
+                                                    model_data,
+                                                    observed_data[observed_data['station_name'] == station[0]],
+                                                    ri_values
+                                                )
+
+            result = minimize(objective, initial_refractive_indices, method=method, bounds=bounds, constraints=constraints)
+
+            success = result.success
+            #counting number of values in model and observation
+
+            if success:
+                print(f"Optimization successful: {result.success}")
+            else:
+                print(f"Optimization attempt {attempt + 1} failed")
+                print(f"Optimization successful: {result.message}")
+
+
+            print(f"Time: {time.time() - start_time}")
+            attempt += 1
+
+        return result     
+
+
+def cost_function4bcnandmsy_ns(station, model, observation, ri_values):
+    """
+    Calculates the error between modelled and measured absorption for a specific stations, BCN and MSY.
+
+    Parameters:
+    station (str): Station name used to filter concentration and absorption data.
+    model (DataFrame): DataFrame containing model data.
+    observation (DataFrame): DataFrame containing observation data.
+    ri_values (list): List of refractive index values for different substances.
+
+    Returns:
+    float: Error between modelled and measured absorption.
+    """
+    calc_absorption = dp.calculate_abs_modeled4BCNandMSY_ns(model, ri_values)
+    
+    measured_abs = dp.get_data_for_station(observation, station[0], ['AbsBrC370'])
+    
+    #conver index to datetime
+    measured_abs.index = pd.to_datetime(measured_abs.index)
+    
+    error = calculate_error(measured_abs, calc_absorption)
+    #print a df with number of values treated
+    num_val = count_values(calc_absorption, measured_abs)
+    df = pd.DataFrame({'station': station, 'num_val': num_val}, index=[0])
+    #save df to csv in a folder called num_val with its station name
+    if not os.path.exists('num_val'):
+        os.makedirs('num_val')
+    df.to_csv(f'num_val/{station}.csv', index=False)
+
+    #rmse = calculate_rmse(measured_abs, calc_absorption*1e6)
+    
+    return error
+
+def optimize_stations4bcnandmsy_ns(station, model_data, observed_data, method, bounds, constraints, initial_refractive_indices, **kwargs):
+    """
+    Perform optimization for BCN, for HERMES and CAMS inventories.
+
+    Parameters:
+    stations (list): List of station names.
+    model_data (DataFrame): The model data as a DataFrame.
+    observed_data (DataFrame): The observed data as a DataFrame.
+    method (str): The optimization method.
+    bounds (Bounds): The optimization bounds.
+    constraints (dict): The optimization constraints.
+    initial_refractive_indices (list): The initial guess for refractive indices.
+
+    Returns:
+    Result: The result of the optimization process.
+    """
+    # consider only positive values from observed_data
+    observed_data = observed_data[observed_data['AbsBrC370'] > 0]
+    
+    if kwargs.get('by_season') == 'yes':
+        start_time = time.time()
+
+        # Define the objective function for optimization
+        objective = lambda ri_values: sum(
+            cost_function4bcnandmsy_ns(
+                station,
+                sbys.season(model_data, station_name=station, kind='model')[kwargs['season']],
+                sbys.season(observed_data, station_name=station, kind='obs')[kwargs['season']],
+                ri_values
+            ) for station in stations
+        )
+
+        result = minimize(objective, initial_refractive_indices, method=method, bounds=bounds, constraints=constraints)
+        
+        print(f"Optimization successful: {result.success}")
+        print(f"Time: {time.time() - start_time}")
+    
+        return result
+    else:
+        max_attempts = 5  # Define el número máximo de intentos
+        attempt = 0
+        success = False
+        
+        while attempt < max_attempts and not success:
+            start_time = time.time()
+            # Esta es la función objetivo que se minimizará
+            objective = lambda ri_values: cost_function4bcnandmsy_ns(
+                                                    station,
+                                                    model_data,
+                                                    observed_data[observed_data['station_name'] == station[0]],
+                                                    ri_values
+                                                )
+
+            result = minimize(objective, initial_refractive_indices, method=method, bounds=bounds, constraints=constraints)
+
+            success = result.success
+            #counting number of values in model and observation
+
+            if success:
+                print(f"Optimization successful: {result.success}")
+            else:
+                print(f"Optimization attempt {attempt + 1} failed")
+                print(f"Optimization successful: {result.message}")
+
+
+            print(f"Time: {time.time() - start_time}")
+            attempt += 1
+
+        return result    

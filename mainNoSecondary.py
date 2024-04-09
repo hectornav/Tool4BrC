@@ -87,6 +87,16 @@ def optimize_ri(df_mod, df_obs, method, mode, bounds, constraints, initial_ri_va
                         result, mode, method, station=station, season=season, mass_data=mass_data, model=kwargs['model']
                     )
                     print(f'Optimization for mode: {mode} and method: {method}, {station}, {season} finished')
+        elif mode == 'by_emissioninventory_nsoa':
+            result = optimization.optimize_stations4bcnandmsy_ns(
+                        [kwargs.get('station')], df_mod, df_obs, method, bounds, constraints,
+                        initial_ri_values, by_season='no',  model=kwargs['model']
+                    )
+            utils.TableNoSecondary(
+                    result, mode, method, station=kwargs.get('station'), mass_data=mass_data, model=kwargs['model']
+                )
+            print(f'Optimization for mode: {mode} and method: {method}, {kwargs.get("station")}, finished')
+
 
     except Exception as e:
         print(f"Error: {e}")
@@ -154,7 +164,7 @@ if __name__ == '__main__':
     #...................................................
     #give values to bounds to the ri for all species
     #...................................................
-    scenario = 'strongly' #or 'moderately' or 'strongly' or 'random
+    scenario = 'weakly' #or 'moderately' or 'strongly' or 'random
     gfas, resi, ship, traf, othr = cases_bounds(scenario)
     wavelength = 370
     brc_ri_bounds, tags = brown_carbon_ri_boundaries.getRiBoundsNoSecondary(wavelength=wavelength, 
@@ -188,10 +198,12 @@ if __name__ == '__main__':
     list_of_stations = unique_stations['station_name'].unique()
 
     mass_data = 'best' #or 'all'
+    methods = ['SLSQP'] #SLSQP, COBYLA, trust-constr
+    '''
     monarch_data = data_retrieval.get_model_data_4monarch(mass_data=mass_data)
     #monarch_data.to_csv('model_mass_data.csv')
     monarch_data = reduceColumnNames(monarch_data)
-    methods = ['SLSQP'] #SLSQP, COBYLA, trust-constr
+    
     cases = ['by_station', 'all'] #['all', 'by_category', 'by_season', 'by_station', 'by_station_season']
     for method in methods:
         for case in cases:
@@ -199,3 +211,18 @@ if __name__ == '__main__':
                 monarch_data, observed_data_clean, method, case,
                 bounds, constraints, constants.INITIAL_RI_VALUES_NOSECONDARY, mass_data=mass_data, model=f'monarch_{mass_data}_{scenario}'
             )
+    '''
+    ### Calculating ri optimized for the Hermees emission inventory
+    bcn_data = pd.read_csv('/home/hnavarro/Desktop/PHD_BSC/GIT/absorption/NInventory/mod/4brc/2018/BestModObs4bcnandmsy/best_Barcelona_PalauReial.csv')
+    bcn_data = reduceColumnNames(bcn_data)
+    msy_data = pd.read_csv('/home/hnavarro/Desktop/PHD_BSC/GIT/absorption/NInventory/mod/4brc/2018/BestModObs4bcnandmsy/best_Montseny.csv')
+    msy_data = reduceColumnNames(msy_data)
+    cases = ['by_emissioninventory_nsoa'] #['all', 'by_category', 'by_season', 'by_station', 'by_station_season']
+    for method in methods:
+        for case in cases:
+            optimize_ri(
+                msy_data, observed_data_clean, method, case,
+                bounds, constraints, constants.INITIAL_RI_VALUES_NOSECONDARY, mass_data=mass_data, model=f'monarch_{mass_data}_{scenario}', 
+                station='Montseny'
+            )
+    

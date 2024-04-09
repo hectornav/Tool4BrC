@@ -88,6 +88,17 @@ def optimize_ri(df_mod, df_obs, method, mode, bounds, constraints, initial_ri_va
                     )
                     print(f'Optimization for mode: {mode} and method: {method}, {station}, {season} finished')
 
+        elif mode == 'by_emissioninventory':
+            result = optimization.optimize_stations4bcnandmsy(
+                        [kwargs.get('station')], df_mod, df_obs, method, bounds, constraints,
+                        initial_ri_values, by_season='no',  model=kwargs['model']
+                    )
+            utils.print_table(
+                    result, mode, method, station=kwargs.get('station'), mass_data=mass_data, model=kwargs['model']
+                )
+            print(f'Optimization for mode: {mode} and method: {method}, {kwargs.get("station")}, finished')
+
+
     except Exception as e:
         print(f"Error: {e}")
         return None
@@ -201,6 +212,7 @@ if __name__ == '__main__':
     monarch_data = data_retrieval.get_model_data_4monarch(mass_data=mass_data)
     #monarch_data.to_csv('model_mass_data.csv')
     methods = ['SLSQP'] #SLSQP, COBYLA, trust-constr
+    
     cases = ['by_station', 'all'] #['all', 'by_category', 'by_season', 'by_station', 'by_station_season']
     for method in methods:
         for case in cases:
@@ -208,3 +220,16 @@ if __name__ == '__main__':
                 monarch_data, observed_data_clean, method, case,
                 bounds, constraints, constants.INITIAL_RI_VALUES, mass_data=mass_data, model=f'monarch_{mass_data}_{scenario}'
             )
+    '''
+    ### Calculating ri optimized for the Hermees emission inventory
+    bcn_data = pd.read_csv('/home/hnavarro/Desktop/PHD_BSC/GIT/absorption/NInventory/mod/4brc/2018/BestModObs4bcnandmsy/best_Barcelona_PalauReial.csv')
+    msy_data = pd.read_csv('/home/hnavarro/Desktop/PHD_BSC/GIT/absorption/NInventory/mod/4brc/2018/BestModObs4bcnandmsy/best_Montseny.csv')
+    cases = ['by_emissioninventory'] #['all', 'by_category', 'by_season', 'by_station', 'by_station_season']
+    for method in methods:
+        for case in cases:
+            optimize_ri(
+                bcn_data, observed_data_clean, method, 'by_emissioninventory',
+                bounds, constraints, constants.INITIAL_RI_VALUES, mass_data=mass_data, model=f'monarch_{mass_data}_{scenario}', 
+                station='Barcelona_PalauReial'
+            )
+    '''

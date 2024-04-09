@@ -90,11 +90,6 @@ def calculate_physical_properties(ri_gfas_poa, ri_gfas_soa, ri_resi_poa, ri_resi
                 'SOATRF':[0.0212, 2.200, 0.005, 20.00, 1.486, ri_trf_soa, 1.800, [1.0,1.2,1.4,1.5,1.6,1.8,2.2], [1.0 for h in np.arange(7)]],
                 'POAOTH':[0.0212, 2.200, 0.005, 20.00, 1.501, ri_othr_poa, 1.800, [1.0 for h in np.arange(7)],  [1.0 for h in np.arange(7)]],
                 'SOAOTH':[0.0212, 2.200, 0.005, 20.00, 1.486, ri_othr_soa, 1.800, [1.0,1.2,1.4,1.5,1.6,1.8,2.2], [1.0 for h in np.arange(7)]],
-                'GFAS':[0.0212, 2.200, 0.005, 20.00, 1.501, ri_gfas, 1.800, [1.0 for h in np.arange(7)],  [1.0 for h in np.arange(7)]],
-                'RESI':[0.0212, 2.200, 0.005, 20.00, 1.501, ri_resi, 1.800, [1.0 for h in np.arange(7)],  [1.0 for h in np.arange(7)]],
-                'SHIP':[0.0212, 2.200, 0.005, 20.00, 1.501, ri_ship, 1.800, [1.0 for h in np.arange(7)],  [1.0 for h in np.arange(7)]],
-                'TRAF':[0.0212, 2.200, 0.005, 20.00, 1.501, ri_traf, 1.800, [1.0 for h in np.arange(7)],  [1.0 for h in np.arange(7)]],
-                'OTHR':[0.0212, 2.200, 0.005, 20.00, 1.501, ri_othr, 1.800, [1.0 for h in np.arange(7)],  [1.0 for h in np.arange(7)]],
                 }
         return phys
 
