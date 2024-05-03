@@ -326,7 +326,28 @@ def calculate_absorption4oa_ns(station, best=True, mass_mode='all', **kwargs):
                               station=station,
                               )
     return stn_m
+
+def calculate_abs_newcase_all(station, best=True, mass_mode='all', **kwargs):
+    if best and kwargs.get('points')=='best':
+        df_mod_stn = pd.read_csv('../absorption/NInventory/mod/4brc/2018/BestModObs/best_' + station + '.csv', index_col=0,\
+                          parse_dates=True)
+        df_mod_stn = reduceColumnNames(df_mod_stn)
+    elif best and kwargs.get('points')=='complete':
+        df_mod_stn = pd.read_csv('../absorption/NInventory/mod/4brc/2018/4brc_' + station + '.csv', index_col=0,\
+                            parse_dates=True)
+        df_mod_stn = reduceColumnNames(df_mod_stn)
     
+    stn_m = ca.get_abs_newcase_all(df_mod_stn, 
+                              WAVELENGTH=constants.WAVELENGTH, 
+                              REL_HUM=constants.RELATIVE_HUMIDITY, 
+                              method= 'SLSQP', 
+                              mass_mode=mass_mode, 
+                              model=kwargs.get('model'),
+                              station=station,
+                              )
+    return stn_m
+
+
 def plot_line_seasonal_abs(stn, points, mode, model):
     fig, ax = plt.subplots(2, 2, figsize=(10, 5))
     # Adjust subplots

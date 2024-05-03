@@ -381,3 +381,53 @@ def get_absorption_cases_nosoa(massconc, WAVELENGTH=constants.WAVELENGTH, REL_HU
         final_absorption = pd.DataFrame(calculated_absorption, columns=columns)
         #return absorption in Mm-1
         return final_absorption*1e6
+
+
+def get_abs_newcase_all(massconc, WAVELENGTH=constants.WAVELENGTH, REL_HUM=constants.RELATIVE_HUMIDITY, **kwargs):
+    """
+    Calculates the absorption for a given mass concentration.
+
+    Parameters:
+    mass_concentrations (dict): Dictionary containing mass concentrations for each species should be in ug/m3.
+    WAVELENGTH (int): Wavelength used to calculate the absorption.
+    REL_HUM (array): Relative humidity used to calculate the absorption.
+    **kwargs: Keyword arguments passed to calculate_optical_properties.
+    mass_mode (str): Mass mode for model (all or best)
+
+    Returns:
+    absorption (float): Absorption for the given mass concentrations.
+    """
+
+    ri_cat = pd.read_csv(f'ri_tables/{kwargs.get("model")}/RI_all/no_secondary/RI_{kwargs.get("method")}_{kwargs.get("mass_mode")}.csv', index_col=0)
+    upper_species = [i.upper() for i in constants.SPECIESNOSECONDARY]
+
+    #calculate optical parameters
+    optical_parameters = aao.calculateOpticalPropertiesNoSecondary(
+                        REL_HUM,
+                        upper_species,
+                        WAVELENGTH,
+                        ri_gfas=ri_cat.loc['gfas'].values[0],
+                        ri_resi=ri_cat.loc['resi'].values[0],
+                        ri_ship=ri_cat.loc['ship'].values[0],
+                        ri_traf=ri_cat.loc['traf'].values[0],
+                        ri_othr=ri_cat.loc['othr'].values[0],
+                    )
+    if kwargs.get('SA'):
+        calculated_absorption = aac.calculateAbsorptionNoSecondary(
+                                                        massconc*1e-6, #appling 1e-6 to convert from ug/m³ to g/m³
+                                                        optical_parameters,
+                                                        ) 
+        columns = massconc.columns
+        final_absorption = pd.DataFrame(calculated_absorption, columns=columns)
+        #return absorption in Mm-1
+        return final_absorption*1e6
+        
+    else:
+        calculated_absorption = aac.calculateAbsorptionNoSecondary(
+                                                        massconc*1e-6, #appling 1e-6 to convert from ug/m³ to g/m³
+                                                        optical_parameters,
+                                                        ).sum(axis=1)
+        columns = ['AbsBrC370']
+        final_absorption = pd.DataFrame(calculated_absorption, columns=columns)
+        #return absorption in Mm-1
+        return final_absorption*1e6

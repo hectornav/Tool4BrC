@@ -141,7 +141,12 @@ def cases_bounds(scenario):
         ship = 'vw'
         traf = 'vw'
         othr = 'vw'
-
+    elif scenario == 'newcase':
+        gfas = 'm'
+        resi = 'w'
+        ship = 'w'
+        traf = 'w'
+        othr = 'vw'
     return gfas, resi, ship, traf, othr
 
 
@@ -164,7 +169,7 @@ if __name__ == '__main__':
     #...................................................
     #give values to bounds to the ri for all species
     #...................................................
-    scenario = 'weakly' #or 'moderately' or 'strongly' or 'random
+    scenario = 'newcase' #or 'moderately' or 'strongly' or 'random
     gfas, resi, ship, traf, othr = cases_bounds(scenario)
     wavelength = 370
     brc_ri_bounds, tags = brown_carbon_ri_boundaries.getRiBoundsNoSecondary(wavelength=wavelength, 
@@ -199,7 +204,7 @@ if __name__ == '__main__':
 
     mass_data = 'best' #or 'all'
     methods = ['SLSQP'] #SLSQP, COBYLA, trust-constr
-    '''
+    
     monarch_data = data_retrieval.get_model_data_4monarch(mass_data=mass_data)
     #monarch_data.to_csv('model_mass_data.csv')
     monarch_data = reduceColumnNames(monarch_data)
@@ -225,4 +230,4 @@ if __name__ == '__main__':
                 bounds, constraints, constants.INITIAL_RI_VALUES_NOSECONDARY, mass_data=mass_data, model=f'monarch_{mass_data}_{scenario}', 
                 station='Montseny'
             )
-    
+    '''
